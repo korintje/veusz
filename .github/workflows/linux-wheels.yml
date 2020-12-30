@@ -10,46 +10,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
   
     steps:
-    
     - uses: actions/checkout@v2
-    
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
     - name: Install dependencies by apt
       run: |
         sudo apt -y update
         sudo apt -y install qt5-default qt5-qmake
     
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    
     - name: Install dependencies by pip
       run: |
-        python3.9 -m pip install --upgrade pip
-        python3.9 -m pip install -U setuptools wheel 
-        if [ -f requirements.txt ]; then python3.9 -m pip install -r requirements.txt; fi
-        python3.8 -m pip install --upgrade pip
-        python3.8 -m pip install -U setuptools wheel 
-        if [ -f requirements.txt ]; then python3.8 -m pip install -r requirements.txt; fi       
-        python3.7 -m pip install --upgrade pip
-        python3.7 -m pip install -U setuptools wheel 
-        if [ -f requirements.txt ]; then python3.7 -m pip install -r requirements.txt; fi
-        python3.6 -m pip install --upgrade pip
-        python3.6 -m pip install -U setuptools wheel 
-        if [ -f requirements.txt ]; then python3.6 -m pip install -r requirements.txt; fi
+        python -m pip install --upgrade pip
+        python -m pip install -U setuptools wheel 
+        if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
         
     - name: Build wheels
       run: |
-        python3.9 setup.py sdist bdist_wheel       
-        python3.8 setup.py sdist bdist_wheel
-        python3.7 setup.py sdist bdist_wheel
-        python3.6 setup.py sdist bdist_wheel
+        python setup.py sdist bdist_wheel       
         ls dist -l
         
     - name: Upload Wheel
       uses: actions/upload-artifact@v2
       with:
-        name: win-wheels
+        name: linux-wheels
         path: dist/*.whl
