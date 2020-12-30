@@ -1,8 +1,10 @@
+# make .whl for Windows
+
 name: Build windows wheels
 
 on:
   #release:
-  #  types: [created]
+  #  types: [created
   pull_request:
     branches: [ wheel_productions ]
 
