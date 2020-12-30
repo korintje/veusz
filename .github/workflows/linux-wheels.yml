@@ -1,0 +1,55 @@
+# make .whl for Linux
+name: Build Linux wheels
+
+on:
+  #release:
+  #  types: [created]
+  pull_request:
+    branches: [ wheel_productions ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  
+    steps:
+    
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies by apt
+      run: |
+        sudo apt -y update
+        sudo apt -y install qt5-default qt5-qmake
+    
+    - name: Install dependencies by pip
+      run: |
+        python3.9 -m pip install --upgrade pip
+        python3.9 -m pip install -U setuptools wheel 
+        if [ -f requirements.txt ]; then python3.9 -m pip install -r requirements.txt; fi
+        python3.8 -m pip install --upgrade pip
+        python3.8 -m pip install -U setuptools wheel 
+        if [ -f requirements.txt ]; then python3.8 -m pip install -r requirements.txt; fi       
+        python3.7 -m pip install --upgrade pip
+        python3.7 -m pip install -U setuptools wheel 
+        if [ -f requirements.txt ]; then python3.7 -m pip install -r requirements.txt; fi
+        python3.6 -m pip install --upgrade pip
+        python3.6 -m pip install -U setuptools wheel 
+        if [ -f requirements.txt ]; then python3.6 -m pip install -r requirements.txt; fi
+        
+    - name: Build wheels
+      run: |
+        python3.9 setup.py sdist bdist_wheel       
+        python3.8 setup.py sdist bdist_wheel
+        python3.7 setup.py sdist bdist_wheel
+        python3.6 setup.py sdist bdist_wheel
+        ls dist -l
+        
+    - name: Upload Wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: win-wheels
+        path: dist/*.whl
