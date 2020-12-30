@@ -51,7 +51,7 @@ jobs:
         py -3.9 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
         py -3.9 setup.py sdist bdist_wheel
         ls -la
-        ls ../
+        
       # py -3.8 -m pip install --upgrade pip
       # py -3.8 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
       # py -3.8 setup.py sdist bdist_wheel
@@ -66,4 +66,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: win-wheels
-        path: dist/*.whl
+        path: ../dist/*.whl
