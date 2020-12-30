@@ -45,7 +45,7 @@ jobs:
         
     - name: Build wheels
       shell: cmd
-      working-directory: veusz
+      # working-directory: veusz
       run: |
         py -3.9 -m pip install --upgrade pip
         py -3.9 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
@@ -65,4 +65,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: win-wheels
-        path: ./*.whl
+        path: ../*.whl
