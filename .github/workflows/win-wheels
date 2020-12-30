@@ -1,0 +1,75 @@
+name: Build windows wheels
+
+on:
+  #release:
+  #  types: [created]
+  pull_request:
+    branches: [ whl_production ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+  
+    steps:
+    
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+        
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+ 
+     - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v1
+      with:
+        path: ../Qt
+        key: ${{ runner.os }}-QtCache
+ 
+     - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+        modules: 'qtsvg'  
+ 
+     - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # pip install PyQt5 sip numpy h5py astropy
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+     - name: Build wheels
+      shell: cmd
+      run: |
+        py -3.9 -m pip install -U setuptools wheel pip
+        py -3.9 setup.py sdist bdist_wheel
+        py -3.8 -m pip install -U setuptools wheel pip
+        py -3.8 setup.py sdist bdist_wheel
+        py -3.7 -m pip install -U setuptools wheel pip
+        py -3.7 setup.py sdist bdist_wheel
+        py -3.6 -m pip install -U setuptools wheel pip
+        py -3.6 setup.py sdist bdist_wheel
+        
+      - name: Upload Wheel
+        uses: actions/upload-artifact@v1
+        with:
+          name: win-wheels
+          path: veusz/dist/*.whl
+
+      # - name: Check wheels
+      #   shell: bash
+      #   run: |
+      #     ls -la
+      #     py -3.9 -m pip install --no-index --find-links . veusz
+      #     py -3.9 -c "import MySQLdb; print(MySQLdb.version_info)"
+      #     py -3.8 -m pip install --no-index --find-links . veusz
+      #     py -3.8 -c "import MySQLdb; print(MySQLdb.version_info)"
+      #     py -3.7 -m pip install --no-index --find-links . veusz
+      #     py -3.7 -c "import MySQLdb; print(MySQLdb.version_info)"
+      #     py -3.6 -m pip install --no-index --find-links . veusz
+      #     py -3.6 -c "import MySQLdb; print(MySQLdb.version_info)"
+      #     py -3.6 -m pip install veusz-3.3.1-cp36-cp36m-win_amd64.whl
+      #     py -3.6 -c "import MySQLdb"
