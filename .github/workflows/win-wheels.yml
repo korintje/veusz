@@ -4,7 +4,7 @@ name: Build windows wheels
 
 on:
   #release:
-  #  types: [created
+  #  types: [created]
   pull_request:
     branches: [ wheel_productions ]
 
@@ -41,7 +41,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         # pip install PyQt5 sip numpy h5py astropy
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if requirements.txt pip install -r requirements.txt
         
     - name: Build wheels
       shell: cmd
