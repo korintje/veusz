@@ -53,6 +53,7 @@ jobs:
         ls -la
         cd
         
+        
       # py -3.8 -m pip install --upgrade pip
       # py -3.8 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
       # py -3.8 setup.py sdist bdist_wheel
@@ -65,7 +66,6 @@ jobs:
         
     - name: Upload Wheel
       uses: actions/upload-artifact@v2
-      if: failure()
       with:
         name: win-wheels
-        path: dist/*.whl
+        path: dist\veusz-3.3.1-cp39-cp39-win_amd64.whl
