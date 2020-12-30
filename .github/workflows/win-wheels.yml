@@ -45,6 +45,7 @@ jobs:
         
     - name: Build wheels
       shell: cmd
+      working-directory: veusz
       run: |
         py -3.9 -m pip install --upgrade pip
         py -3.9 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
