@@ -37,22 +37,26 @@ jobs:
         cached: ${{ steps.cache-qt.outputs.cache-hit }}
         modules: 'qtsvg'  
  
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install PyQt5 sip numpy h5py astropy
-        # if requirements.txt pip install -r requirements.txt
+    # - name: Install Python dependencies
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     pip install PyQt5 sip numpy h5py astropy
+    #    # if requirements.txt pip install -r requirements.txt
         
     - name: Build wheels
       shell: cmd
       run: |
-        py -3.9 -m pip install -U setuptools wheel pip
+        py -3.9 -m pip install --upgrade pip
+        py -3.9 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
         py -3.9 setup.py sdist bdist_wheel
-        py -3.8 -m pip install -U setuptools wheel pip
+        py -3.8 -m pip install --upgrade pip
+        py -3.8 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
         py -3.8 setup.py sdist bdist_wheel
-        py -3.7 -m pip install -U setuptools wheel pip
+        py -3.7 -m pip install --upgrade pip
+        py -3.7 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
         py -3.7 setup.py sdist bdist_wheel
-        py -3.6 -m pip install -U setuptools wheel pip
+        py -3.6 -m pip install --upgrade pip
+        py -3.6 -m pip install -U setuptools wheel pip PyQt5 sip numpy h5py astropy
         py -3.6 setup.py sdist bdist_wheel
         
     - name: Upload Wheel
