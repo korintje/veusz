@@ -5,7 +5,7 @@ on:
   #release:
   #  types: [created]
   pull_request:
-    branches: [ wheel_productions ]
+    branches: [ product ]
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel       
         ls dist -l
-        
+
     - name: Upload Wheel
       uses: actions/upload-artifact@v2
       with:
