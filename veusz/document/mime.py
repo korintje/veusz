@@ -25,6 +25,7 @@ from .. import qtall as qt
 from . import doc
 from . import operations
 from . import widgetfactory
+from . import drawingml
 
 # mime type for copy and paste
 widgetmime = 'text/x-vnd.veusz-widget-3'
@@ -34,6 +35,9 @@ datamime = 'text/x-vnd.veusz-data-1'
 
 # svg mime (convertable to `svgfile` widget)
 svgmime = 'image/svg+xml'
+
+# DrawingML mime (convertable to graph widget)
+dmlmime = 'Art::GVML ClipFormat'
 
 def generateWidgetsMime(widgets):
     """Create mime data describing widget and children.
@@ -119,6 +123,9 @@ def getClipboardWidgetMime():
     widgetmime = getWidgetMime(mimedata)
     if widgetmime is not None:
         return widgetmime
+    elif dmlmime in formats:
+        ba = mimedata.data(dmlmime).data()
+        return drawingml.toMimes(ba) # tuple
     elif svgmime in formats:
         ba = mimedata.data(svgmime).data()
         return convertImgtoWidgetMime(ba, svgmime)

@@ -1259,8 +1259,14 @@ class TreeEditDock(qt.QDockWidget):
 
         data = document.getClipboardWidgetMime()
         if data:
-            op = document.OperationWidgetPaste(self.selwidgets[0], data)
-            widgets = self.document.applyOperation(op)
+            ops = []
+            if type(data) is tuple:
+                ops.append(document.OperationWidgetPaste(self.selwidgets[0], data[0]))
+                ops.append(document.OperationDataPaste(data[1]))          
+            else:
+                ops.append(document.OperationWidgetPaste(self.selwidgets[0], data))
+            for op in ops:
+                widgets = self.document.applyOperation(op)
             if widgets:
                 self.selectWidget(widgets[0])
 
