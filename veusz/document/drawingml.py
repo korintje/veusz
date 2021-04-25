@@ -10,14 +10,6 @@ import shutil
 import io
 import tempfile
 
-tmpdir = tempfile.TemporaryDirectory()
-TEMP_NAME_CLIP = "clip.zip"
-clippath = os.path.join(tmpdir.name, TEMP_NAME_CLIP)
-TEMP_NAME_PPTX = "container"
-pdirpath = os.path.join(tmpdir.name, TEMP_NAME_PPTX)
-pptxpath = os.path.join(tmpdir.name, TEMP_NAME_PPTX + ".pptx")
-pzippath = os.path.join(tmpdir.name, TEMP_NAME_PPTX + ".zip")
-
 Override = r"{http://schemas.openxmlformats.org/package/2006/content-types}Override"
 ChartType = r"application/vnd.openxmlformats-officedocument.drawingml.chart+xml"
 
@@ -44,8 +36,17 @@ def read_xy(series):
     yVal = [yVal[x] for x in key] #create yVal list
     return xVal, yVal
 
-def toWidgetMime(ba):
+def toMimes(ba):
     print(type(ba))
+    tmpdir = tempfile.TemporaryDirectory()
+    TEMP_NAME_CLIP = "clip.zip"
+    clippath = os.path.join(tmpdir.name, TEMP_NAME_CLIP)
+    TEMP_NAME_PPTX = "container"
+    pdirpath = os.path.join(tmpdir.name, TEMP_NAME_PPTX)
+    pptxpath = os.path.join(tmpdir.name, TEMP_NAME_PPTX + ".pptx")
+    pzippath = os.path.join(tmpdir.name, TEMP_NAME_PPTX + ".zip")
+    pptxpath_new = os.path.join(tmpdir.name, TEMP_NAME_PPTX + "_new" + ".pptx")
+
     stream = io.BytesIO(ba)
     # Get DrawingML object from clipboard
     with zipfile.ZipFile(stream, "r") as z:
@@ -81,26 +82,33 @@ def toWidgetMime(ba):
         with open(os.path.join(pdirpath, "ppt/charts", os.path.basename(part_name)), "w") as f:
             f.write(chart_xml)
     shutil.make_archive(pdirpath, 'zip', pdirpath)
-    os.rename(pzippath, pptxpath)
+    os.rename(pzippath, pptxpath_new)
 
     # Re-open
-    prs = Presentation(pptxpath)
+    prs = Presentation(pptxpath_new)
     charts = []
     for i in range(len(part_names)):
         chart = prs.slides[0].shapes[i + 2].chart
         charts.append(chart)
 
-    header = ["1"]
-    body = []
+    #graphtexts = []
+    data_commands = []
 
-    databody = []
+    headers = []
+    bodies = []
+    graph_num = [str(len(charts))]
 
-    for i, chart in enumerate(charts):
+    for i, chart in enumerate(charts):         
+        
+        header = []
+        body = []
+        
         x_axis = chart.category_axis
         y_axis = chart.value_axis
 
         header.append("graph")
-        graph_title = chart.chart_title.text_frame.text if chart.has_title else "graph1"
+        #graph_title = chart.chart_title.text_frame.text if chart.has_title else "graph1"
+        graph_title = "graph{}".format(str(i+1))
         header.append("'{}'".format(graph_title))
         header.append("'/page1/{}'".format(graph_title))
 
@@ -141,14 +149,14 @@ def toWidgetMime(ba):
                     body.append("To('..')")
 
                     xData, yData = read_xy(series)
-                    databody.append("ImportString(u'`{}`(numeric)','''".format(xDataName))
+                    data_commands.append("ImportString(u'`{}`(numeric)','''".format(xDataName))
                     for datapoint in xData:
-                        databody.append(datapoint)
-                    databody.append("''')")
-                    databody.append("ImportString(u'`{}`(numeric)','''".format(yDataName))
+                        data_commands.append(str(datapoint))
+                    data_commands.append("''')")
+                    data_commands.append("ImportString(u'`{}`(numeric)','''".format(yDataName))
                     for datapoint in yData:
-                        databody.append(datapoint)
-                    databody.append("''')")         
+                        data_commands.append(str(datapoint))
+                    data_commands.append("''')")         
                     
                 elif plottype is pptx.chart.plot.BarPlot:
                     print("I see, bar")
@@ -157,11 +165,14 @@ def toWidgetMime(ba):
                 else:
                     print("what?")
 
-    print(header)
-    print(body)
-    print(databody)
+        header.append(str(len(body)))
+        headers += header
+        bodies += body
 
-    widgetmime = '\n'.join(header.append(str(len(body)))) + '\n' + '\n'.join(body) + '\n'
-    datamime = '\n'.join(databody) + '\n'
+    widget_commands = graph_num + headers + bodies
+    widget_savetext = '\n'.join(widget_commands) + '\n' + '\n'.join(body) + '\n'
+    data_savetext = '\n'.join(data_commands) + '\n'
 
-    return widgetmime, datamime
+    tmpdir.cleanup()
+
+    return widget_savetext, data_savetext

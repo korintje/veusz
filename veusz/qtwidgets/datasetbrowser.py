@@ -503,7 +503,8 @@ class DatasetsNavigatorTree(qt.QTreeView):
             """Paste dataset(s)."""
             if document.isClipboardDataMime():
                 mime = qt.QApplication.clipboard().mimeData()
-                self.doc.applyOperation(document.OperationDataPaste(mime))
+                data = document.getClipboardDataMime()
+                self.doc.applyOperation(document.OperationDataPaste(data))
 
         # if there is data to paste, add menu item
         if document.isClipboardDataMime():

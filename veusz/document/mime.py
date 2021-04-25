@@ -37,7 +37,8 @@ datamime = 'text/x-vnd.veusz-data-1'
 svgmime = 'image/svg+xml'
 
 # DrawingML mime (convertable to graph widget)
-dmlmime = 'Art::GVML ClipFormat'
+dmlmime = 'application/x-qt-windows-mime;value="Art::GVML ClipFormat"'
+#dmlmime = 'application/x-qt-windows-mime'
 
 def generateWidgetsMime(widgets):
     """Create mime data describing widget and children.
@@ -105,6 +106,15 @@ def isClipboardDataMime():
     mimedata = qt.QApplication.clipboard().mimeData()
     return datamime in mimedata.formats()
 
+def getClipboardDataMime():
+    """Returns datamime data if mimedata contains correct mimetype"""
+    clipboard = qt.QApplication.clipboard()
+    mimedata = clipboard.mimeData()
+    if datamime in mimedata.formats():
+        return mimedata.data(datamime).data().decode('utf-8')
+    else:
+        return None
+
 def getWidgetMime(mimedata):
     """Given mime data, return decoded python string."""
     if widgetmime in mimedata.formats():
@@ -142,7 +152,10 @@ def getClipboardWidgetMime():
 
 def getMimeWidgetTypes(data):
     """Get list of widget types in the mime data."""
-    lines = data.split('\n')
+    if type(data) is tuple:
+        lines = data[0].split('\n')
+    else:
+        lines = data.split('\n')
     try:
         numwidgets = int(lines[0])
     except ValueError:
@@ -309,9 +322,10 @@ class OperationDataPaste(operations.Operation):
 
     descr = 'paste data'
 
-    def __init__(self, mimedata):
+    def __init__(self, data):
         """Paste datasets into document."""
-        self.data = mimedata.data(datamime).data().decode('utf-8')
+        #self.data = mimedata.data(datamime).data().decode('utf-8')
+        self.data = data
 
     def do(self, thisdoc):
         """Do the data paste."""

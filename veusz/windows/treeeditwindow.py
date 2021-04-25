@@ -31,6 +31,10 @@ from .. import setting
 
 from .widgettree import WidgetTreeModel, WidgetTreeView
 
+# DrawingML mime (convertable to graph widget)
+dmlmime = 'application/x-qt-windows-mime;value="Art::GVML ClipFormat"'
+conv_mimes = [dmlmime]
+
 def _(text, disambiguation=None, context='TreeEditWindow'):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
