@@ -142,8 +142,8 @@ def toMimes(ba):
                 yDataName += "_{}{}{}".format(i, j, k)
                 plottype = type(plot)
                 if plottype is pptx.chart.plot.XyPlot:
-                    body.append("Add('xy', name=u'xy1', autoadd=False)")
-                    body.append("To(u'xy1')")
+                    body.append("Add('xy', name=u'xy{}', autoadd=False)".format(str(k+1)))
+                    body.append("To(u'xy{}')".format(str(k+1)))
                     body.append("Set('xData', '{}')".format(xDataName))
                     body.append("Set('yData', '{}')".format(yDataName))
                     body.append("To('..')")
