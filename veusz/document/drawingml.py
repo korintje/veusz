@@ -1,178 +1,229 @@
-import pptx
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
-from pptx.enum.chart import XL_CHART_TYPE
-from pptx.util import Mm
+import os
+import io
 import zipfile
 import xml.etree.ElementTree as ET
-import os
-import shutil
-import io
-import tempfile
 
 Override = r"{http://schemas.openxmlformats.org/package/2006/content-types}Override"
 ChartType = r"application/vnd.openxmlformats-officedocument.drawingml.chart+xml"
+c = r"{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 
-def get_pt_val(pt):
-    str_value = pt.xpath("./c:v")[0].text #retrieve point value
-    value = float(str_value)
-    return value
+class ChartFile():
 
-def read_xy(series):
-    xVal = {}
-    yVal = {}
-    ser = series._ser
-    x_pts = ser.xpath(".//c:xVal//c:pt") # get all xVals from xml with xpath query
-    y_pts = ser.xpath(".//c:yVal//c:pt") # get all yVals from xml with xpath query
-    for i in range(len(x_pts)): #loop through all xVals
-        x_value = get_pt_val(x_pts[i]) #call function to get each x value
-        y_value = get_pt_val(y_pts[i]) #call function to get each y value
-        xVal[x_pts[i].idx] = x_value #store x value in dictionary
-        yVal[y_pts[i].idx] = y_value # store y value in dictionary
+    def __init__(self, xmltext):
+        self.xmltext = xmltext
+        self.parse()
+    
+    def parse(self):
+        tree = ET.parse(self.xmltext)
+        root = tree.getroot()
+        self.chart = Chart(root.find(c + "chart"))
 
-    # in case x & y idx don't have matching pairs return keys that are common to both x & y
-    key = set.intersection(*tuple(set(d.keys()) for d in [xVal, yVal]))
-    xVal = [xVal[x] for x in key] #create xVal list
-    yVal = [yVal[x] for x in key] #create yVal list
-    return xVal, yVal
 
-def toMimes(ba):
-    print(type(ba))
-    tmpdir = tempfile.TemporaryDirectory()
-    TEMP_NAME_CLIP = "clip.zip"
-    clippath = os.path.join(tmpdir.name, TEMP_NAME_CLIP)
-    TEMP_NAME_PPTX = "container"
-    pdirpath = os.path.join(tmpdir.name, TEMP_NAME_PPTX)
-    pptxpath = os.path.join(tmpdir.name, TEMP_NAME_PPTX + ".pptx")
-    pzippath = os.path.join(tmpdir.name, TEMP_NAME_PPTX + ".zip")
-    pptxpath_new = os.path.join(tmpdir.name, TEMP_NAME_PPTX + "_new" + ".pptx")
+class Chart():
 
-    stream = io.BytesIO(ba)
+    def __init__(self, element):
+        self.element = element
+        self.title = "graph"
+        self.axes = []
+        self.scatterCharts = []
+        self.barCharts = []
+        self.parse()
+    
+    def parse(self):
+        # Set chart title
+        title_words = self.element.find(c + "title").find(c + "tx").find(c + "rich").find(c + "p").findall(c + "r")
+        self.title = "".join([word.find(c + "t").text for word in title_words]) 
+        # Set axes
+        plotarea = self.element.find(c + "plotArea")
+        valaxes = plotarea.findall(c + "valAx")
+        cataxes = plotarea.findall(c + "catAx")
+        for axis in valaxes:
+            self.axes.append(Axis(axis, "num"))
+        for axis in cataxes:
+            self.axes.append(Axis(axis, "text"))
+        # Set charts
+        self.scatterCharts = [ScatterChart(element) for element in plotarea.findall(c + "scatterChart")]
+        self.barCharts = [BarChart(element) for element in plotarea.findall(c + "barChart")]
+
+
+class Axis():
+
+    def __init__(self, element, axistype):
+        self.element = element
+        self.type = axistype
+        self.axPos = "" # "b": bottom, "l": left, "t": top, "r": right
+        self.label = ""
+        self.min = None
+        self.max = None
+        self.majorUnit = None
+        self.minorUnit = None
+        self.majorTickMark = None
+        self.minorTickMark = None
+        self.parse()
+
+    def parse(self):
+        if self.element.find(c + "axPos"):
+            self.axPos = self.element.find(c + "axPos").get("val")
+        if self.element.find(c + "title"):
+            label_words = self.element.find(c + "title").find(c + "tx").find(c + "rich").find(c + "p").findall(c + "r")
+            self.label = "".join([word.find(c + "t").text for word in label_words]) 
+        scaling = self.element.find(c + "scaling")
+        axis_min = scaling.find(c + "min")
+        if axis_min:
+            self.min = axis_min.get("val")
+        axis_max = scaling.find(c + "max")
+        if axis_max:
+            self.max = axis_max.get("val")
+        majorUnit = self.element.majorUnit
+        if majorUnit:
+            self.majorUnit = majorUnit.get("val")
+        minorUnit = self.element.minorUnit
+        if minorUnit:
+            self.minorUnit = minorUnit.get("val")
+
+
+class ScatterChart():
+
+    def __init__(self, element):
+        self.element = element
+        self.parse()
+
+    def parse(self):
+        self.serieses = [xySeries(element) for element in self.element.findall(c + "ser")]
+
+
+class BarChart():
+
+    def __init__(self, element):
+        self.element = element
+        self.parse()
+
+    def parse(self):
+        self.serieses = [cvSeries(element) for element in self.element.findall(c + "ser")]
+
+
+class xySeries():
+
+    def __init__(self, element):
+        self.element = element
+        self.xRef = ""
+        self.yRef = ""
+        self.x_vals = []
+        self.y_vals = []
+        self.parse()
+    
+    def parse(self):
+        x_wrap = self.element.find(c + "xVal").find(c + "numRef")
+        y_wrap = self.element.find(c + "yVal").find(c + "numRef")
+        self.xRef = x_wrap.find(c + "f").text
+        self.yRef = y_wrap.find(c + "f").text
+        self.x_vals = [v.find(c + "v").text for v in x_wrap.find(c + "numCache").find(c + "pt")]
+        self.y_vals = [v.find(c + "v").text for v in y_wrap.find(c + "numCache").find(c + "pt")]
+
+
+class cvSeries():
+
+    def __init__(self, element):
+        self.element = element
+        self.catRef = ""
+        self.valRef = ""
+        self.cats = []
+        self.vals = []
+        self.parse()
+    
+    def parse(self):
+        cat_wrap = self.element.find(c + "cat").find(c + "numRef")
+        val_wrap = self.element.find(c + "val").find(c + "numRef")
+        self.catRef = cat_wrap.find(c + "f").text
+        self.valRef = val_wrap.find(c + "f").text
+        self.cats = [v.find(c + "v").text for v in cat_wrap.find(c + "numCache").find(c + "pt")]
+        self.vals = [v.find(c + "v").text for v in val_wrap.find(c + "numCache").find(c + "pt")]
+
+
+def getCharts(ba: bytearray) -> list:
     # Get DrawingML object from clipboard
+    stream = io.BytesIO(ba)
     with zipfile.ZipFile(stream, "r") as z:
         with z.open("[Content_Types].xml") as f:
             tree = ET.fromstring(f.read())
         part_names = []
-        for child in tree.iterfind(Override):
-            content_type = child.attrib["ContentType"]
+        for link in tree.findall(Override):
+            content_type = link.attrib["ContentType"]
             if content_type == ChartType:
-                part_name = child.attrib["PartName"]
+                part_name = link.attrib["PartName"]
                 part_names.append(part_name)
-        chart_xmls = []
+        charts = []
         for part_name in part_names:
             with io.TextIOWrapper(z.open(part_name.strip("/"), "r")) as f: 
-                chart_xml = f.read()
-                chart_xmls.append(chart_xml)
+                xmltext = f.read()
+                chartfile = ChartFile(xmltext)
+                charts.append(chartfile.chart)        
+        return charts
 
-    # Create pptx container
-    prs = Presentation()
-    slide_layout = prs.slide_layouts[1]
-    slide = prs.slides.add_slide(slide_layout)
-    chart_data = CategoryChartData()
-    x, y, cx, cy = Mm(10), Mm(10), Mm(10), Mm(10)
-    for i in part_names:
-        slide.shapes.add_chart(XL_CHART_TYPE.XY_SCATTER, x, y, cx, cy, chart_data)
-    prs.save(pptxpath)
 
-    # Override
-    with zipfile.ZipFile(pptxpath, "r") as z:
-        filenames = z.namelist()
-        z.extractall(pdirpath)
-    for part_name, chart_xml in zip(part_names, chart_xmls):
-        with open(os.path.join(pdirpath, "ppt/charts", os.path.basename(part_name)), "w") as f:
-            f.write(chart_xml)
-    shutil.make_archive(pdirpath, 'zip', pdirpath)
-    os.rename(pzippath, pptxpath_new)
+def toMimes(ba: bytearray):
 
-    # Re-open
-    prs = Presentation(pptxpath_new)
-    charts = []
-    for i in range(len(part_names)):
-        chart = prs.slides[0].shapes[i + 2].chart
-        charts.append(chart)
-
-    #graphtexts = []
-    data_commands = []
-
-    headers = []
-    bodies = []
+    charts = getCharts(ba)
+    data_cmds = []
+    gen_cmds = []
+    mod_cmds = []
     graph_num = [str(len(charts))]
+    for i, chart in enumerate(charts):
 
-    for i, chart in enumerate(charts):         
-        
-        header = []
-        body = []
-        
-        x_axis = chart.category_axis
-        y_axis = chart.value_axis
+        # Command lists
+        gen_cmd = ["graph"]
+        mod_cmd = []
 
-        header.append("graph")
-        #graph_title = chart.chart_title.text_frame.text if chart.has_title else "graph1"
-        graph_title = "graph{}".format(str(i+1))
-        header.append("'{}'".format(graph_title))
-        header.append("'/page1/{}'".format(graph_title))
+        # Append graph title commands
+        graph_title = chart.title + str(i+1)
+        gen_cmd.append("'{}'".format(graph_title))
+        gen_cmd.append("'/page1/{}'".format(graph_title))
 
-        body.append("Add('axis', name=u'x', autoadd=False)")
-        body.append("Add('axis', name=u'y', autoadd=False)")
+        # Append set_axis commands
+        for axis in chart.axes:
+            names = {"b": "x1", "l": "y1", "t": "x2", "r": "y2"}
+            directions = {"b": "horizontal", "l": "vertical", "t": "horizontal", "r": "vertical"}
+            positions = {"b": "0.0", "l": "0.0", "t": "1.0", "r": "1.0"}
+            pos = axis.axPos
+            mod_cmd.append("Add('axis', name=u'{}', autoadd=False)".format(names[pos]))
+            mod_cmd.append("To(u'x')")
+            mod_cmd.append("Set('direction', u'{}')".format(directions[pos]))
+            mod_cmd.append("Set('otherPosition', {})".format(positions[pos]))
+            if axis.label:
+                mod_cmd.append("Set('label', u'{}')".format(axis.label))
+            if axis.min:
+                mod_cmd.append("Set('min', {})".format(axis.min))
+            if axis.max:
+                mod_cmd.append("Set('max', {})".format(axis.max))
+            mod_cmd.append("To('..')")
 
-        body.append("To(u'x')")
-        if x_axis.axis_title.has_text_frame:
-            body.append("Set('label', u'{}')".format(x_axis.axis_title.text_frame.text))
-        if x_axis.minimum_scale:
-            body.append("Set('min', {})".format(x_axis.minimum_scale))
-        if x_axis.maximum_scale:
-            body.append("Set('max', {})".format(x_axis.maximum_scale))
-        body.append("To('..')")
-
-        body.append("To(u'y')")
-        body.append("Set('direction', u'vertical')")
-        if y_axis.axis_title.has_text_frame:
-            body.append("Set('label', u'{}')".format(y_axis.axis_title.text_frame.text))
-        if y_axis.minimum_scale:
-            body.append("Set('min', {})".format(y_axis.minimum_scale))
-        if y_axis.maximum_scale:
-            body.append("Set('max', {})".format(y_axis.maximum_scale))
-        body.append("To('..')")
-
-        for j, plot in enumerate(chart.plots):
-            for k, series in enumerate(plot.series):
-                xDataName = series.name if series.name else "xData"
+        # Append set_data commands
+        for j, plot in enumerate(chart.scatterCharts):
+            for k, series in enumerate(plot.serieses):
+                xDataName = series.xRef if series.xRef else "x"
                 xDataName += "_{}{}{}".format(i, j, k)
-                yDataName = series.name if series.name else "yData"
+                yDataName = series.yRef if series.yRef else "y"
                 yDataName += "_{}{}{}".format(i, j, k)
-                plottype = type(plot)
-                if plottype is pptx.chart.plot.XyPlot:
-                    body.append("Add('xy', name=u'xy{}', autoadd=False)".format(str(k+1)))
-                    body.append("To(u'xy{}')".format(str(k+1)))
-                    body.append("Set('xData', '{}')".format(xDataName))
-                    body.append("Set('yData', '{}')".format(yDataName))
-                    body.append("To('..')")
+                mod_cmd.append("Add('xy', name=u'xy{}', autoadd=False)".format(str(k+1)))
+                mod_cmd.append("To(u'xy{}')".format(str(k+1)))
+                mod_cmd.append("Set('xData', '{}')".format(xDataName))
+                mod_cmd.append("Set('yData', '{}')".format(yDataName))
+                mod_cmd.append("To('..')")
+                data_cmds.append("ImportString(u'`{}`(numeric)','''".format(xDataName))
+                for x_val in series.x_vals:
+                    data_cmds.append(x_val)
+                data_cmds.append("''')")
+                data_cmds.append("ImportString(u'`{}`(numeric)','''".format(yDataName))
+                for y_val in series.y_vals:
+                    data_cmds.append(y_val)
+                data_cmds.append("''')")         
 
-                    xData, yData = read_xy(series)
-                    data_commands.append("ImportString(u'`{}`(numeric)','''".format(xDataName))
-                    for datapoint in xData:
-                        data_commands.append(str(datapoint))
-                    data_commands.append("''')")
-                    data_commands.append("ImportString(u'`{}`(numeric)','''".format(yDataName))
-                    for datapoint in yData:
-                        data_commands.append(str(datapoint))
-                    data_commands.append("''')")         
-                    
-                elif plottype is pptx.chart.plot.BarPlot:
-                    print("I see, bar")
-                elif plottype is pptx.chart.plot.LinePlot:
-                    print("Ah, Line plot")
-                else:
-                    print("what?")
+        gen_cmd.append(str(len(mod_cmd)))
+        gen_cmds += gen_cmd
+        mod_cmds += mod_cmd
 
-        header.append(str(len(body)))
-        headers += header
-        bodies += body
-
-    widget_commands = graph_num + headers + bodies
-    widget_savetext = '\n'.join(widget_commands) + '\n' + '\n'.join(body) + '\n'
-    data_savetext = '\n'.join(data_commands) + '\n'
-
-    tmpdir.cleanup()
+    widget_commands = graph_num + gen_cmds + mod_cmds
+    widget_savetext = '\n'.join(widget_commands) + '\n'
+    data_savetext = '\n'.join(data_cmds) + '\n'
 
     return widget_savetext, data_savetext
