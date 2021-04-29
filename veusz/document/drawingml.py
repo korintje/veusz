@@ -36,7 +36,8 @@ class Chart():
         # Set chart title
         title_wrap = self.element.find(c + "title")
         if title_wrap:
-            title_words = title_wrap.find(c + "tx").find(c + "rich").find(a + "p").findall(a + "r")
+            #title_words = title_wrap.find(c + "tx").find(c + "rich").find(a + "p").findall(a + "r")
+            title_words = title_wrap.findall(".//" + a + "r")
             self.title = "".join([word.find(a + "t").text for word in title_words]) 
         # Set axes
         plotarea = self.element.find(c + "plotArea")
@@ -72,7 +73,8 @@ class Axis():
         self.axPos = self.element.find(c + "axPos").get("val")
         label_wrap = self.element.find(c + "title")
         if label_wrap:
-            label_words = label_wrap.find(c + "tx").find(c + "rich").find(a + "p").findall(a + "r")
+            #label_words = label_wrap.find(c + "tx").find(c + "rich").find(a + "p").findall(a + "r")
+            label_words = label_wrap.findall(".//" + a + "r")
             self.label = "".join([word.find(a + "t").text for word in label_words]) 
         scaling = self.element.find(c + "scaling")
         if scaling:
@@ -154,13 +156,6 @@ class cvSeries():
         self.vals = [v.find(c + "v").text for v in val_wrap.find(c + "numCache").find(c + "pt")]
 
 
-# def remove_symbols(string: str) -> str:
-#     symbols = ["!", "[", "]", "$", ":", ";"]
-#     for symbol in symbols:
-#         string = string.replace(symbol, "")
-#     return string
-
-
 def getCharts(ba: bytearray) -> list:
     # Get DrawingML object from clipboard
     stream = io.BytesIO(ba)
@@ -222,13 +217,12 @@ def toMimes(ba: bytearray):
 
         for j, plot in enumerate(chart.scatterCharts):
             for k, series in enumerate(plot.serieses):
-                # xDataName = remove_symbols(series.xRef) if series.xRef else "x"
-                xDataName = "x_{}{}{}".format(i, j, k)
-                # yDataName = remove_symbols(series.yRef) if series.yRef else "y"
-                yDataName = "y_{}{}{}".format(i, j, k)
-                xyName = "xy{}{}".format(j, k)
-                mod_cmd.append("Add('xy', name=u'{}', autoadd=False)".format(xyName))
-                mod_cmd.append("To(u'{}')".format(xyName))
+                num = int('{}{}{}'.format(i, j, k), 2)
+                xDataName = "xData{}".format(num)
+                yDataName = "yData{}".format(num)
+                plotName = "xy{}".format(num)
+                mod_cmd.append("Add('xy', name=u'{}', autoadd=False)".format(plotName))
+                mod_cmd.append("To(u'{}')".format(plotName))
                 mod_cmd.append("Set('xData', u'{}')".format(xDataName))
                 mod_cmd.append("Set('yData', u'{}')".format(yDataName))
                 mod_cmd.append("Set('xAxis', u'{}')".format(ax_id_names[plot.xAxisID]))
