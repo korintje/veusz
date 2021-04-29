@@ -201,13 +201,15 @@ def toMimes(ba: bytearray):
         gen_cmd.append("'/page1/{}'".format(graph_title))
 
         # Append set_axis commands
+        ax_id_names = {}
         for axis in chart.axes:
-            #names = {"b": "x1", "l": "y1", "t": "x2", "r": "y2"}
+            names = {"b": "x1", "l": "y1", "t": "x2", "r": "y2"}
             directions = {"b": "horizontal", "l": "vertical", "t": "horizontal", "r": "vertical"}
             positions = {"b": "0.0", "l": "0.0", "t": "1.0", "r": "1.0"}
             pos = axis.axPos
-            mod_cmd.append("Add('axis', name=u'{}', autoadd=False)".format(axis.id))
-            mod_cmd.append("To(u'{}')".format(axis.id))
+            ax_id_names[str(axis.id)] = names[pos] 
+            mod_cmd.append("Add('axis', name=u'{}', autoadd=False)".format(names[pos]))
+            mod_cmd.append("To(u'{}')".format(names[pos]))
             mod_cmd.append("Set('direction', u'{}')".format(directions[pos]))
             mod_cmd.append("Set('otherPosition', {})".format(positions[pos]))
             if axis.label:
@@ -229,8 +231,8 @@ def toMimes(ba: bytearray):
                 mod_cmd.append("To(u'{}')".format(xyName))
                 mod_cmd.append("Set('xData', u'{}')".format(xDataName))
                 mod_cmd.append("Set('yData', u'{}')".format(yDataName))
-                mod_cmd.append("Set('xAxis', u'{}')".format(plot.xAxisID))
-                mod_cmd.append("Set('yAxis', u'{}')".format(plot.yAxisID))
+                mod_cmd.append("Set('xAxis', u'{}')".format(ax_id_names[plot.xAxisID]))
+                mod_cmd.append("Set('yAxis', u'{}')".format(ax_id_names[plot.yAxisID]))
                 mod_cmd.append("To('..')")
                 # Append set_data commands
                 data_cmds.append("ImportString(u'`{}`(numeric)','''".format(xDataName))
