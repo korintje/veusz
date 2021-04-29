@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 Override = r"{http://schemas.openxmlformats.org/package/2006/content-types}Override"
 ChartType = r"application/vnd.openxmlformats-officedocument.drawingml.chart+xml"
 c = r"{http://schemas.openxmlformats.org/drawingml/2006/chart}"
+a = r"{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
 class ChartFile():
 
@@ -14,9 +15,11 @@ class ChartFile():
         self.parse()
     
     def parse(self):
-        tree = ET.parse(self.xmltext)
-        root = tree.getroot()
-        self.chart = Chart(root.find(c + "chart"))
+        tree = ET.fromstring(self.xmltext)
+        #tree = ET.parse(self.xmltext)
+        #root = tree.getroot()
+        #self.chart = Chart(root.find(c + "chart"))
+        self.chart = Chart(tree.find(c + "chart"))
 
 
 class Chart():
@@ -31,8 +34,10 @@ class Chart():
     
     def parse(self):
         # Set chart title
-        title_words = self.element.find(c + "title").find(c + "tx").find(c + "rich").find(c + "p").findall(c + "r")
-        self.title = "".join([word.find(c + "t").text for word in title_words]) 
+        title_wrap = self.element.find(c + "title")
+        if title_wrap:
+            title_words = title_wrap.find(c + "tx").find(c + "rich").find(a + "p").findall(a + "r")
+            self.title = "".join([word.find(a + "t").text for word in title_words]) 
         # Set axes
         plotarea = self.element.find(c + "plotArea")
         valaxes = plotarea.findall(c + "valAx")
@@ -51,6 +56,7 @@ class Axis():
     def __init__(self, element, axistype):
         self.element = element
         self.type = axistype
+        self.id = ""
         self.axPos = "" # "b": bottom, "l": left, "t": top, "r": right
         self.label = ""
         self.min = None
@@ -62,23 +68,25 @@ class Axis():
         self.parse()
 
     def parse(self):
-        if self.element.find(c + "axPos"):
-            self.axPos = self.element.find(c + "axPos").get("val")
-        if self.element.find(c + "title"):
-            label_words = self.element.find(c + "title").find(c + "tx").find(c + "rich").find(c + "p").findall(c + "r")
-            self.label = "".join([word.find(c + "t").text for word in label_words]) 
+        self.id = self.element.find(c + "axId").get("val")
+        self.axPos = self.element.find(c + "axPos").get("val")
+        label_wrap = self.element.find(c + "title")
+        if label_wrap:
+            label_words = label_wrap.find(c + "tx").find(c + "rich").find(a + "p").findall(a + "r")
+            self.label = "".join([word.find(a + "t").text for word in label_words]) 
         scaling = self.element.find(c + "scaling")
-        axis_min = scaling.find(c + "min")
-        if axis_min:
-            self.min = axis_min.get("val")
-        axis_max = scaling.find(c + "max")
-        if axis_max:
-            self.max = axis_max.get("val")
-        majorUnit = self.element.majorUnit
-        if majorUnit:
+        if scaling:
+            axis_min = scaling.find(c + "min")
+            if axis_min is not None:
+                self.min = axis_min.get("val")
+            axis_max = scaling.find(c + "max")
+            if axis_max is not None:
+                self.max = axis_max.get("val")
+        majorUnit = self.element.find(c + "majorUnit")
+        if majorUnit is not None:
             self.majorUnit = majorUnit.get("val")
-        minorUnit = self.element.minorUnit
-        if minorUnit:
+        minorUnit = self.element.find(c + "minorUnit")
+        if minorUnit is not None:
             self.minorUnit = minorUnit.get("val")
 
 
@@ -86,10 +94,16 @@ class ScatterChart():
 
     def __init__(self, element):
         self.element = element
+        self.xAxisID = ""
+        self.yAxisID = ""
         self.parse()
 
     def parse(self):
         self.serieses = [xySeries(element) for element in self.element.findall(c + "ser")]
+        axisIDs = self.element.findall(c + "axId")
+        if len(axisIDs) == 2:
+            self.xAxisID = axisIDs[0].get("val")
+            self.yAxisID = axisIDs[1].get("val")
 
 
 class BarChart():
@@ -117,8 +131,8 @@ class xySeries():
         y_wrap = self.element.find(c + "yVal").find(c + "numRef")
         self.xRef = x_wrap.find(c + "f").text
         self.yRef = y_wrap.find(c + "f").text
-        self.x_vals = [v.find(c + "v").text for v in x_wrap.find(c + "numCache").find(c + "pt")]
-        self.y_vals = [v.find(c + "v").text for v in y_wrap.find(c + "numCache").find(c + "pt")]
+        self.x_vals = [pt.find(c + "v").text for pt in x_wrap.find(c + "numCache").findall(c + "pt")]
+        self.y_vals = [pt.find(c + "v").text for pt in y_wrap.find(c + "numCache").findall(c + "pt")]
 
 
 class cvSeries():
@@ -140,6 +154,13 @@ class cvSeries():
         self.vals = [v.find(c + "v").text for v in val_wrap.find(c + "numCache").find(c + "pt")]
 
 
+# def remove_symbols(string: str) -> str:
+#     symbols = ["!", "[", "]", "$", ":", ";"]
+#     for symbol in symbols:
+#         string = string.replace(symbol, "")
+#     return string
+
+
 def getCharts(ba: bytearray) -> list:
     # Get DrawingML object from clipboard
     stream = io.BytesIO(ba)
@@ -154,7 +175,7 @@ def getCharts(ba: bytearray) -> list:
                 part_names.append(part_name)
         charts = []
         for part_name in part_names:
-            with io.TextIOWrapper(z.open(part_name.strip("/"), "r")) as f: 
+            with io.TextIOWrapper(z.open(part_name.strip("/"), "r"), encoding='utf-8') as f: 
                 xmltext = f.read()
                 chartfile = ChartFile(xmltext)
                 charts.append(chartfile.chart)        
@@ -181,12 +202,12 @@ def toMimes(ba: bytearray):
 
         # Append set_axis commands
         for axis in chart.axes:
-            names = {"b": "x1", "l": "y1", "t": "x2", "r": "y2"}
+            #names = {"b": "x1", "l": "y1", "t": "x2", "r": "y2"}
             directions = {"b": "horizontal", "l": "vertical", "t": "horizontal", "r": "vertical"}
             positions = {"b": "0.0", "l": "0.0", "t": "1.0", "r": "1.0"}
             pos = axis.axPos
-            mod_cmd.append("Add('axis', name=u'{}', autoadd=False)".format(names[pos]))
-            mod_cmd.append("To(u'x')")
+            mod_cmd.append("Add('axis', name=u'{}', autoadd=False)".format(axis.id))
+            mod_cmd.append("To(u'{}')".format(axis.id))
             mod_cmd.append("Set('direction', u'{}')".format(directions[pos]))
             mod_cmd.append("Set('otherPosition', {})".format(positions[pos]))
             if axis.label:
@@ -197,18 +218,21 @@ def toMimes(ba: bytearray):
                 mod_cmd.append("Set('max', {})".format(axis.max))
             mod_cmd.append("To('..')")
 
-        # Append set_data commands
         for j, plot in enumerate(chart.scatterCharts):
             for k, series in enumerate(plot.serieses):
-                xDataName = series.xRef if series.xRef else "x"
-                xDataName += "_{}{}{}".format(i, j, k)
-                yDataName = series.yRef if series.yRef else "y"
-                yDataName += "_{}{}{}".format(i, j, k)
-                mod_cmd.append("Add('xy', name=u'xy{}', autoadd=False)".format(str(k+1)))
-                mod_cmd.append("To(u'xy{}')".format(str(k+1)))
-                mod_cmd.append("Set('xData', '{}')".format(xDataName))
-                mod_cmd.append("Set('yData', '{}')".format(yDataName))
+                # xDataName = remove_symbols(series.xRef) if series.xRef else "x"
+                xDataName = "x_{}{}{}".format(i, j, k)
+                # yDataName = remove_symbols(series.yRef) if series.yRef else "y"
+                yDataName = "y_{}{}{}".format(i, j, k)
+                xyName = "xy{}{}".format(j, k)
+                mod_cmd.append("Add('xy', name=u'{}', autoadd=False)".format(xyName))
+                mod_cmd.append("To(u'{}')".format(xyName))
+                mod_cmd.append("Set('xData', u'{}')".format(xDataName))
+                mod_cmd.append("Set('yData', u'{}')".format(yDataName))
+                mod_cmd.append("Set('xAxis', u'{}')".format(plot.xAxisID))
+                mod_cmd.append("Set('yAxis', u'{}')".format(plot.yAxisID))
                 mod_cmd.append("To('..')")
+                # Append set_data commands
                 data_cmds.append("ImportString(u'`{}`(numeric)','''".format(xDataName))
                 for x_val in series.x_vals:
                     data_cmds.append(x_val)
@@ -222,8 +246,8 @@ def toMimes(ba: bytearray):
         gen_cmds += gen_cmd
         mod_cmds += mod_cmd
 
-    widget_commands = graph_num + gen_cmds + mod_cmds
-    widget_savetext = '\n'.join(widget_commands) + '\n'
+    widget_cmds = graph_num + gen_cmds + mod_cmds
+    widget_savetext = '\n'.join(widget_cmds) + '\n'
     data_savetext = '\n'.join(data_cmds) + '\n'
 
     return widget_savetext, data_savetext
