@@ -61,6 +61,15 @@ def escapeXML(text):
     text = text.replace('\ue001', '&amp;')
     return text
 
+def removeFoundry(qtfontname):
+    """
+    If the fontname contains a foundry name (e.g. "Arial [Monotype]"), 
+    the text in the square brackets will be removed.
+    """ 
+    fontfamily = re.sub("\[.+?\]", "", qtfontname)
+    fontfamily.rstrip()
+    return fontfamily
+
 def createPath(path, scale):
     """Convert qt path to svg path.
 
@@ -444,7 +453,7 @@ class SVGPaintEngine(qt.QPaintEngine):
                 'stroke="none"',
                 'fill="%s"' % self.pen.color().name(),
                 'fill-opacity="%.3g"' % self.pen.color().alphaF(),
-                'font-family="%s"' % escapeXML(font.family()),
+                'font-family="%s"' % escapeXML(removeFoundry(font.family())),
                 'font-size="%s"' % size,
             ]
             if font.italic():
