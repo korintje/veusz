@@ -13,26 +13,32 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.0.3
     - name: Cache Qt
       id: cache-qt
       uses: actions/cache@v1
       with:
         path: ../Qt
-        key: ${{ runner.os }}-QtCache
+        key: ${{ runner.os }}-QtCache-v3
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Upgrade pip
+      run : |
+        python -V
+        python -m pip install --upgrade pip
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
         cached: ${{ steps.cache-qt.outputs.cache-hit }}
         modules: 'qtsvg'
+        version: 5.15.2
+        setup-python: false
     - name: Install Python dependencies
       run: |
-        pip install PyQt5 sip==5.5.0 numpy h5py astropy
+        pip install -r requirements.txt
     - name: Build
       run: |
         python setup.py build_ext --inplace

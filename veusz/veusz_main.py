@@ -34,13 +34,13 @@ if sys.version_info[0] < 3:
 
 copyr='''Veusz %s
 
-Copyright (C) Jeremy Sanders 2003-2020 <jeremy@jeremysanders.net>
+Copyright (C) Jeremy Sanders 2003-2021 <jeremy@jeremysanders.net>
  and contributors
 Licenced under the GNU General Public Licence (version 2 or greater)
 '''
 
 splashcopyr='''<b><font color="purple">Veusz %s<br></font></b>
-Copyright (C) Jeremy Sanders 2003-2020 and contributors<br>
+Copyright (C) Jeremy Sanders 2003-2021 and contributors<br>
 Licenced under the GPL (version 2 or greater)
 '''
 
@@ -67,7 +67,7 @@ def makeSplash(app):
     message.setAlignment(qt.Qt.AlignCenter)
     # increase size of font
     font = message.font()
-    font.setPointSize(font.pointSize()*1.5)
+    font.setPointSizeF(font.pointSize()*1.5)
     message.setFont(font)
     layout.addWidget(message)
     h = qt.QFontMetrics(font).height()
@@ -77,8 +77,8 @@ def makeSplash(app):
     splash.setGeometry(5, 5, 100, 100)
     screen = qt.QDesktopWidget().screenGeometry()
     splash.move(
-        (screen.width()-layout.sizeHint().width())/2,
-        (screen.height()-layout.sizeHint().height())/2
+        (screen.width()-layout.sizeHint().width())//2,
+        (screen.height()-layout.sizeHint().height())//2
     )
 
     # make sure dialog goes away - avoid problem if a message box pops
