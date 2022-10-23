@@ -34,13 +34,13 @@ if sys.version_info[0] < 3:
 
 copyr='''Veusz %s
 
-Copyright (C) Jeremy Sanders 2003-2021 <jeremy@jeremysanders.net>
+Copyright (C) Jeremy Sanders 2003-2022 <jeremy@jeremysanders.net>
  and contributors
 Licenced under the GNU General Public Licence (version 2 or greater)
 '''
 
 splashcopyr='''<b><font color="purple">Veusz %s<br></font></b>
-Copyright (C) Jeremy Sanders 2003-2021 and contributors<br>
+Copyright (C) Jeremy Sanders 2003-2022 and contributors<br>
 Licenced under the GPL (version 2 or greater)
 '''
 
@@ -363,6 +363,8 @@ def run():
     try:
         qt.QApplication.setAttribute(qt.Qt.AA_EnableHighDpiScaling, True)
         qt.QApplication.setAttribute(qt.Qt.AA_UseHighDpiPixmaps, True)
+        qt.QApplication.setHighDpiScaleFactorRoundingPolicy(
+            qt.QApplication.highDpiScaleFactorRoundingPolicy().PassThrough)
     except AttributeError:
         # old qt versions
         pass
