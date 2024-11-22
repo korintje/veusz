@@ -1,6 +1,4 @@
-# Veusz build using PyPI packages on Ubuntu
-
-name: Ubuntu build using pip packages
+name: Windows pip build
 
 on:
   push:
@@ -11,10 +9,12 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-2019
 
     steps:
     - uses: actions/checkout@v4
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v2
     - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
@@ -23,25 +23,24 @@ jobs:
       run : |
         python -V
         python -m pip install --upgrade pip
-    - name: Install Qt
+    - name: Install Qt6
       uses: jurplel/install-qt-action@v4
       with:
         cache: 'true'
-        cache-key-prefix: 'qt-ubuntu-v2'
-        version: '5.15.2'
+        cache-key-prefix: 'qt-windows-v1'
+        version: '6.7.1'
         setup-python: false
     - name: Install Python dependencies
       run: |
-        # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        # force older PyQt5
-        pip install numpy PyQt5==5.15.10 sip astropy h5py tomli
-    - name: Build extensions
+        pip install -r requirements.txt
+    - name: Build
       run: |
         python setup.py build_ext --inplace
     - name: Run tests
-      env:
-        LD_LIBRARY_PATH: ${{ env.QT_ROOT_DIR }}/lib:{{ env.LD_LIBRARY_PATH }}
-        QT_QPA_PLATFORM: minimal
-        VEUSZ_INPLACE_TEST: 1
       run: |
-        tests/runselftest.py
+        set QT_QPA_PLATFORM=minimal
+        set VEUSZ_INPLACE_TEST=1
+        python tests/runselftest.py
+      env:
+        VEUSZ_INPLACE_TEST: '1'
+        VEUSZ_REMOVE_FROM_ENV: 'QT_PLUGIN_PATH QML2_IMPORT_PATH'
