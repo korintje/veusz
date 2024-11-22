@@ -65,12 +65,6 @@ class PreferencesDialog(VeuszDialog):
         self.translationBrowseButton.clicked.connect(
             self.translationBrowseClicked)
 
-        # disable thread option if not supported
-        if not qt.QFontDatabase.supportsThreadedFontRendering():
-            self.threadSpinBox.setEnabled(False)
-            self.threadSpinBox.setToolTip(
-                _("Disabled because of lack of threaded drawing support"))
-
         # use cwd for file dialogs
         (self.dirDocCWDRadio if setdb['dirname_usecwd'] else self.dirDocPrevRadio).click()
 

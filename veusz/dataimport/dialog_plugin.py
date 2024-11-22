@@ -48,7 +48,7 @@ class ImportTabPlugins(importdialog.ImportTab):
         names = sorted([p.name for p in plugins.importpluginregistry])
         self.pluginType.addItems(names)
 
-        self.pluginType.currentIndexChanged[int].connect(self.pluginChanged)
+        self.pluginType.currentIndexChanged.connect(self.pluginChanged)
 
         self.fields = []
 
@@ -222,7 +222,7 @@ class ImportTabPlugins(importdialog.ImportTab):
             for p in plugins.importpluginregistry:
                 if ftype in p.file_extensions:
                     plugin = p.name
-            idx = self.pluginType.findText(plugin, qt.Qt.MatchExactly)
+            idx = self.pluginType.findText(plugin, qt.Qt.MatchFlag.MatchExactly)
             self.pluginType.setCurrentIndex(idx)
             self.pluginChanged(-1)
 

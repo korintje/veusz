@@ -52,17 +52,20 @@ class CaptureDialog(VeuszDialog):
             qt.QDoubleValidator(1e-2, 10000000, 2, self))
 
         # add completion for filenames
-        c = self.filenamecompleter = qt.QCompleter(self)
-        model = qt.QDirModel(c)
-        c.setModel(model)
-        self.filenameEdit.setCompleter(c)
+        self.filenamecompleter = qt.QCompleter(self)
+        model = qt.QFileSystemModel()
+        self.filenamecompleter.setModel(model)
+        self.filenameEdit.setCompleter(self.filenamecompleter)
+        # model = qt.QFileSystemModel(c)
+        # c.setModel(model)
+        # self.filenameEdit.setCompleter(c)
 
         # get notification of change of capture method
         self.methodBG = qt.QButtonGroup(self)
         self.methodBG.addButton( self.captureFileButton, 0 )
         self.methodBG.addButton( self.captureInternetButton, 1 )
         self.methodBG.addButton( self.captureProgramButton, 2 )
-        self.methodBG.buttonClicked[int].connect(self.slotMethodChanged)
+        self.methodBG.buttonClicked.connect(self.slotMethodChanged)
         # restore previously clicked button
         self.methodBG.button( d.get('CaptureDialog_method', 0) ).click()
 
@@ -71,7 +74,7 @@ class CaptureDialog(VeuszDialog):
         self.stopBG.addButton( self.clickingStopButton, 0 )
         self.stopBG.addButton( self.numLinesStopButton, 1 )
         self.stopBG.addButton( self.timeStopButton, 2 )
-        self.stopBG.buttonClicked[int].connect(self.slotStopChanged)
+        self.stopBG.buttonClicked.connect(self.slotStopChanged)
         self.stopBG.button( d.get('CaptureDialog_stop', 0) ).click()
 
         # update interval
@@ -83,7 +86,7 @@ class CaptureDialog(VeuszDialog):
 
         # user starts capture
         self.captureButton = self.buttonBox.addButton(
-            _("Ca&pture"), qt.QDialogButtonBox.ApplyRole )
+            _("Ca&pture"), qt.QDialogButtonBox.ButtonRole.ApplyRole )
 
         self.captureButton.clicked.connect(self.slotCaptureClicked)
 
@@ -126,10 +129,10 @@ class CaptureDialog(VeuszDialog):
         """Browse for a data file."""
 
         fd = qt.QFileDialog(self, 'Browse data file or socket')
-        fd.setFileMode( qt.QFileDialog.ExistingFile )
+        fd.setFileMode( qt.QFileDialog.FileMode.ExistingFile )
 
         # update filename if changed
-        if fd.exec_() == qt.QDialog.Accepted:
+        if fd.exec() == qt.QDialog.DialogCode.Accepted:
             self.filenameEdit.replaceAndAddHistory( fd.selectedFiles()[0] )
 
     def slotCaptureClicked(self):
@@ -232,7 +235,7 @@ class CapturingDialog(VeuszDialog):
         self.starttime.start()
 
         # sort tree by dataset name
-        self.datasetTreeWidget.sortItems(0, qt.Qt.AscendingOrder)
+        self.datasetTreeWidget.sortItems(0, qt.Qt.SortOrder.AscendingOrder)
 
         # timer for updating display
         self.displaytimer = qt.QTimer(self)
@@ -273,7 +276,7 @@ class CapturingDialog(VeuszDialog):
 
         # iterate over each dataset
         for name, length in cts.items():
-            find = tree.findItems(name, qt.Qt.MatchExactly, 0)
+            find = tree.findItems(name, qt.Qt.MatchFlag.MatchExactly, 0)
             if find:
                 # if already in tree, update number of counts
                 find[0].setText(1, str(length))

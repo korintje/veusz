@@ -146,7 +146,7 @@ def pixmapAsHtml(pix):
     """Get QPixmap as html image text."""
     ba = qt.QByteArray()
     buf = qt.QBuffer(ba)
-    buf.open(qt.QIODevice.WriteOnly)
+    buf.open(qt.QIODevice.OpenModeFlag.WriteOnly)
     pix.toImage().save(buf, "PNG")
     b64 = bytes(buf.data().toBase64()).decode('ascii')
     return '<img src="data:image/png;base64,%s">' % b64
@@ -411,7 +411,7 @@ def populateCombo(combo, items):
 def positionFloatingPopup(popup, widget):
     """Position a popped up window (popup) to side and below widget given."""
     pos = widget.parentWidget().mapToGlobal( widget.pos() )
-    desktop = qt.QApplication.desktop()
+    desktop = qt.QApplication.primaryScreen()
 
     # recalculates out position so that size is correct below
     popup.adjustSize()
@@ -652,8 +652,11 @@ class SvgWidgetFixedAspect(qt.QWidget):
 class OverrideCursor:
     """A context manager to handle changing the mouse cursor temporarily."""
 
-    def __init__(self, cursor=qt.Qt.WaitCursor):
-        self.cursor = cursor
+    def __init__(self, cursor=None):
+        if cursor:
+            self.cursor = cursor
+        else:
+            self.cursor = qt.QCursor(qt.Qt.CursorShape.WaitCursor)
 
     def __enter__(self):
         qt.QApplication.setOverrideCursor(qt.QCursor(self.cursor))
@@ -681,7 +684,7 @@ class DisabledIconEngine(qt.QIconEngine):
         return str(id(self))
 
     def paint(self, painter, rect, mode, state):
-        self.icon.paint(painter, rect, qt.Qt.AlignCenter, qt.QIcon.Disabled, state)
+        self.icon.paint(painter, rect, qt.Qt.AlignmentFlag.AlignCenter, qt.QIcon.Mode.Disabled, state)
 
     def pixmap(self, size, mode, state):
-        return self.icon.pixmap(size, qt.QIcon.Disabled, state)
+        return self.icon.pixmap(size, qt.QIcon.Mode.Disabled, state)

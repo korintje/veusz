@@ -55,7 +55,7 @@ class ReloadData(VeuszDialog):
 
         # if interval changed or enabled update timer
         self.intervalCheck.clicked.connect(self.intervalUpdate)
-        self.intervalTime.valueChanged[int].connect(self.intervalUpdate)
+        self.intervalTime.valueChanged.connect(self.intervalUpdate)
 
         # timer to reload data
         self.intervalTimer = qt.QTimer()
@@ -63,11 +63,11 @@ class ReloadData(VeuszDialog):
 
         # manual reload
         self.reloadbutton = self.buttonBox.addButton(
-            "&Reload again", qt.QDialogButtonBox.ApplyRole)
+            "&Reload again", qt.QDialogButtonBox.ButtonRole.ApplyRole)
         self.reloadbutton.clicked.connect(self.reloadData)
 
         # close by default, not reload
-        self.buttonBox.button(qt.QDialogButtonBox.Close).setDefault(True)
+        self.buttonBox.button(qt.QDialogButtonBox.StandardButton.Close).setDefault(True)
 
     def statLinkedFiles(self):
         """Stat linked files.

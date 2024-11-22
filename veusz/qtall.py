@@ -18,14 +18,42 @@
 
 """A convenience module to import used Qt symbols from."""
 
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtSvg import *
-from PyQt5.QtPrintSupport import *
-from PyQt5.uic import loadUi
+from PyQt6.QtCore import (
+    QT_VERSION_STR, PYQT_VERSION_STR, Qt, QCoreApplication, QRectF, QPoint,
+    QPointF, QLineF, QTime, QTimer, QEvent, QSignalMapper, QBuffer, QByteArray,
+    QIODevice, QLocale, QSettings, QDir, QUrl, QItemSelectionModel, QRect,
+    pyqtSignal, pyqtSlot, QThread, QTranslator, QAbstractTableModel, QSizeF,
+    QStringListModel, QObject, QSemaphore, QMutex, QSize, QAbstractListModel,
+    QAbstractItemModel, QRegularExpression, QModelIndex, QRunnable, QMimeData,
+    QSortFilterProxyModel, QThreadPool, QMarginsF, QStandardPaths, QSocketNotifier
+)
+from PyQt6.QtGui import (
+    QDesktopServices, QBrush, QPen, QFont, QAction, QPalette, QFontMetrics,
+    QFontMetricsF, QScreen, QFileSystemModel, QIntValidator, QDoubleValidator,
+    QPainter, QPainterPath, QPaintEngine, QTextDocument, QPaintDevice, QImage,
+    QFontDatabase, QPixmap, QColor, QIcon, QActionGroup, QCursor, QMouseEvent,
+    QValidator, QRegularExpressionValidator, QTransform, QPolygonF, QIconEngine,
+    QKeySequence, QPicture, QTextOption, QTextCursor, QPageSize, QPageLayout,
+    QImageWriter, qRgba
+)
+from PyQt6.QtWidgets import (
+    QWidget, QMainWindow, QApplication, QSplashScreen, QLabel, QVBoxLayout,
+    QHBoxLayout, QGridLayout, QMessageBox, QGraphicsRectItem, QGraphicsLineItem,
+    QGraphicsSimpleTextItem, QGraphicsItem, QSizePolicy, QCompleter, QButtonGroup,
+    QDialogButtonBox, QFileDialog, QStatusBar, QAbstractItemView, QDialog,
+    QTreeWidgetItem, QStyle, QStyledItemDelegate, QLineEdit, QMenu, QFrame, QSlider,
+    QGraphicsPathItem, QGraphicsView, QGraphicsScene, QPushButton, QToolButton,
+    QHeaderView, QToolBar, QScrollArea, QTextEdit, QSpinBox, QCheckBox, QComboBox,
+    QFontComboBox, QGroupBox, QDockWidget, QTreeView, QTabWidget, QTableWidgetItem,
+    QColorDialog, QListWidgetItem, QInputDialog, QRadioButton, QItemDelegate
+)
+from PyQt6.QtSvgWidgets import QGraphicsSvgItem
+from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtPrintSupport import QPrinter, QPrintDialog, QAbstractPrintDialog
+from PyQt6.uic import loadUi
 
 try:
-    from PyQt5 import sip
+    from PyQt6 import sip
 except ImportError:
     import sip
+

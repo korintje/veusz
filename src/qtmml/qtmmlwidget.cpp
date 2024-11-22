@@ -47,7 +47,7 @@
 #include <QtWidgets/QApplication>
 #include <QtCore/QString>
 #include <QtCore/QMap>
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QScreen>
 #include <QtGui/QPainter>
 #include <QtGui/QPaintEvent>
 
@@ -3177,7 +3177,7 @@ bool MmlDocument::setContent(QString text, QString *errorMsg,
 {
     clear();
 
-    QString prefix = "<?xml version=\"2.0\"?>\n";
+    QString prefix = "<?xml version=\"1.0\"?>\n";
     prefix.append(entityDeclarations());
 
     uint prefix_lines = 0;
@@ -4227,8 +4227,12 @@ MmlTextNode::MmlTextNode(const QString &text, MmlDocument *document)
 {
     m_text = text;
     // Trim whitespace from ends, but keep nbsp and thinsp
-    m_text.remove(QRegExp("^[^\\S\\x00a0\\x2009]+"));
-    m_text.remove(QRegExp("[^\\S\\x00a0\\x2009]+$"));
+    // m_text.remove(QRegExp("^[^\\S\\x00a0\\x2009]+"));
+    // m_text.remove(QRegExp("[^\\S\\x00a0\\x2009]+$"));
+    static const QRegularExpression leadingWhitespace("^[^\\S\\x00a0\\x2009]+");
+    static const QRegularExpression trailingWhitespace("[^\\S\\x00a0\\x2009]+$");
+    m_text.remove(leadingWhitespace);
+    m_text.remove(trailingWhitespace);
 
     if (m_text == QString(QChar(0x62, 0x20))	     // &InvisibleTimes;
 	    || m_text == QString(QChar(0x63, 0x20))  // &InvisibleComma;
@@ -5493,137 +5497,159 @@ static QString entityDeclarations()
 static int interpretSpacing(QString value, int em, int ex, bool *ok)
 {
     if (ok != 0)
-	*ok = true;
+    *ok = true;
 
     if (value == "thin")
-	return 1;
+        return 1;
 
     if (value == "medium")
-	return 2;
+        return 2;
 
     if (value == "thick")
-	return 3;
+        return 3;
 
     struct HSpacingValue {
-	const char *name;
-	float factor;
+        const char *name;
+        float factor;
     };
 
     static const HSpacingValue g_h_spacing_data[] =
     {
-	{ "veryverythinmathspace",	(float) 0.0555556   },
-	{ "verythinmathspace",  	(float) 0.111111    },
-	{ "thinmathspace",          	(float) 0.166667    },
-	{ "mediummathspace",    	(float) 0.222222    },
-	{ "thickmathspace",     	(float) 0.277778    },
-	{ "verythickmathspace", 	(float) 0.333333    },
-	{ "veryverythickmathspace", 	(float) 0.388889    },
-	{ 0,    	    	    	(float) 0   	    }
+        { "veryverythinmathspace", (float) 0.0555556 },
+        { "verythinmathspace",     (float) 0.111111  },
+        { "thinmathspace",         (float) 0.166667  },
+        { "mediummathspace",       (float) 0.222222  },
+        { "thickmathspace",        (float) 0.277778  },
+        { "verythickmathspace",    (float) 0.333333  },
+        { "veryverythickmathspace", (float) 0.388889 },
+        { 0, (float) 0 }
     };
 
     const HSpacingValue *v = g_h_spacing_data;
     for (; v->name != 0; ++v) {
-	if (value == v->name)
-	    return (int)(em*v->factor);
+        if (value == v->name)
+            return (int)(em * v->factor);
     }
 
     if (value.endsWith("em")) {
-	value.truncate(value.length() - 2);
-	bool float_ok;
-	float factor = value.toFloat(&float_ok);
-	if (float_ok && factor >= 0)
-	    return (int)(em*factor);
-	else {
-	    qWarning("interpretSpacing(): could not parse \"%sem\"", value.toLatin1().data());
-	    if (ok != 0)
-		*ok = false;
-	    return 0;
-	}
+        value.truncate(value.length() - 2);
+        bool float_ok;
+        float factor = value.toFloat(&float_ok);
+        if (float_ok && factor >= 0)
+            return (int)(em * factor);
+        else {
+            qWarning("interpretSpacing(): could not parse \"%sem\"", value.toLatin1().data());
+            if (ok != 0)
+                *ok = false;
+            return 0;
+        }
     }
 
     if (value.endsWith("ex")) {
-	value.truncate(value.length() - 2);
-	bool float_ok;
-	float factor = value.toFloat(&float_ok);
-	if (float_ok && factor >= 0)
-	    return (int)(ex*factor);
-	else {
-	    qWarning("interpretSpacing(): could not parse \"%sex\"", value.toLatin1().data());
-	    if (ok != 0)
-		*ok = false;
-	    return 0;
-	}
+        value.truncate(value.length() - 2);
+        bool float_ok;
+        float factor = value.toFloat(&float_ok);
+        if (float_ok && factor >= 0)
+            return (int)(ex * factor);
+        else {
+            qWarning("interpretSpacing(): could not parse \"%sex\"", value.toLatin1().data());
+            if (ok != 0)
+                *ok = false;
+            return 0;
+        }
     }
 
-   if (value.endsWith("cm")) {
-	value.truncate(value.length() - 2);
-	bool float_ok;
-	float factor = value.toFloat(&float_ok);
-	if (float_ok && factor >= 0) {
-	    Q_ASSERT(qApp->desktop() != 0);
-	    QDesktopWidget *dw = qApp->desktop();
-	    Q_ASSERT(dw->width() != 0);
-	    Q_ASSERT(dw->widthMM() != 0);
-	    return (int)(factor*10*dw->width()/dw->widthMM());
-	}
-	else {
-	    qWarning("interpretSpacing(): could not parse \"%scm\"", value.toLatin1().data());
-	    if (ok != 0)
-		*ok = false;
-	    return 0;
-	}
+    if (value.endsWith("cm")) {
+        value.truncate(value.length() - 2);
+        bool float_ok;
+        float factor = value.toFloat(&float_ok);
+        if (float_ok && factor >= 0) {
+            QScreen *screen = QApplication::primaryScreen();
+            if (screen) {
+                QRect geometry = screen->geometry();
+                qreal dpi = screen->logicalDotsPerInch();
+                qreal widthMM = geometry.width() / dpi * 25.4;
+                Q_ASSERT(widthMM != 0);
+                return (int)(factor * 10 * geometry.width() / widthMM);
+            } else {
+                qWarning("interpretSpacing(): could not retrieve screen information");
+                if (ok != 0)
+                    *ok = false;
+                return 0;
+            }
+        }
+        else {
+            qWarning("interpretSpacing(): could not parse \"%scm\"", value.toLatin1().data());
+            if (ok != 0)
+                *ok = false;
+            return 0;
+        }
     }
 
     if (value.endsWith("mm")) {
-	value.truncate(value.length() - 2);
-	bool float_ok;
-	float factor = value.toFloat(&float_ok);
-	if (float_ok && factor >= 0) {
-	    Q_ASSERT(qApp->desktop() != 0);
-	    QDesktopWidget *dw = qApp->desktop();
-	    Q_ASSERT(dw->width() != 0);
-	    Q_ASSERT(dw->widthMM() != 0);
-	    return (int)(factor*dw->width()/dw->widthMM());
-	}
-	else {
-	    qWarning("interpretSpacing(): could not parse \"%smm\"", value.toLatin1().data());
-	    if (ok != 0)
-		*ok = false;
-	    return 0;
-	}
+        value.truncate(value.length() - 2);
+        bool float_ok;
+        float factor = value.toFloat(&float_ok);
+        if (float_ok && factor >= 0) {
+            QScreen *screen = QApplication::primaryScreen();
+            if (screen) {
+                QRect geometry = screen->geometry();
+                qreal dpi = screen->logicalDotsPerInch();
+                qreal widthMM = geometry.width() / dpi * 25.4;
+                return (int)(factor * geometry.width() / widthMM);
+            } else {
+                qWarning("interpretSpacing(): could not retrieve screen information");
+                if (ok != 0)
+                    *ok = false;
+                return 0;
+            }
+        }
+        else {
+            qWarning("interpretSpacing(): could not parse \"%smm\"", value.toLatin1().data());
+            if (ok != 0)
+                *ok = false;
+            return 0;
+        }
     }
 
     if (value.endsWith("in")) {
-	value.truncate(value.length() - 2);
-	bool float_ok;
-	float factor = value.toFloat(&float_ok);
-	if (float_ok && factor >= 0) {
-	    Q_ASSERT(qApp->desktop() != 0);
-	    QDesktopWidget *dw = qApp->desktop();
-	    Q_ASSERT(dw->width() != 0);
-	    Q_ASSERT(dw->widthMM() != 0);
-	    return (int)(factor*10*dw->width()/(2.54*dw->widthMM()));
-	}
-	else {
-	    qWarning("interpretSpacing(): could not parse \"%sin\"", value.toLatin1().data());
-	    if (ok != 0)
-		*ok = false;
-	    return 0;
-	}
+        value.truncate(value.length() - 2);
+        bool float_ok;
+        float factor = value.toFloat(&float_ok);
+        if (float_ok && factor >= 0) {
+            QScreen *screen = QApplication::primaryScreen();
+            if (screen) {
+                QRect geometry = screen->geometry();
+                qreal dpi = screen->logicalDotsPerInch();
+                qreal widthMM = geometry.width() / dpi * 25.4;
+                return (int)(factor * 10 * geometry.width() / (2.54 * widthMM));
+            } else {
+                qWarning("interpretSpacing(): could not retrieve screen information");
+                if (ok != 0)
+                    *ok = false;
+                return 0;
+            }
+        }
+        else {
+            qWarning("interpretSpacing(): could not parse \"%sin\"", value.toLatin1().data());
+            if (ok != 0)
+                *ok = false;
+            return 0;
+        }
     }
 
     if (value.endsWith("px")) {
-	value.truncate(value.length() - 2);
-	bool float_ok;
-	int i = (int) value.toFloat(&float_ok);
-	if (float_ok && i >= 0)
-	    return i;
-	else {
-	    qWarning("interpretSpacing(): could not parse \"%spx\"", value.toLatin1().data());
-	    if (ok != 0)
-		*ok = false;
-	    return 0;
-	}
+        value.truncate(value.length() - 2);
+        bool float_ok;
+        int i = (int) value.toFloat(&float_ok);
+        if (float_ok && i >= 0)
+            return i;
+        else {
+            qWarning("interpretSpacing(): could not parse \"%spx\"", value.toLatin1().data());
+            if (ok != 0)
+                *ok = false;
+            return 0;
+        }
     }
 
     bool float_ok;
@@ -5776,48 +5802,53 @@ static QString decodeEntityValue(QString literal)
 {
     QString result;
 
-    while (!literal.isEmpty()) {
+    while (!literal.isEmpty())
+    {
+        if (!literal.startsWith("&#"))
+        {
+            qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
+            return QString();
+        }
 
-	if (!literal.startsWith("&#")) {
-	    qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
-	    return QString();
-	}
+        literal = literal.mid(2);
 
-	literal = literal.right(literal.length() - 2);
+        int i = literal.indexOf(';');
+        if (i == -1)
+        {
+            qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
+            return QString();
+        }
 
-	int i = literal.indexOf(';');
-	if (i == -1) {
-	    qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
-	    return QString();
-	}
+        QString char_code = literal.left(i);
+        literal = literal.mid(i + 1);
 
-	QString char_code = literal.left(i);
-	literal = literal.right(literal.length() - i - 1);
+        if (char_code.isEmpty())
+        {
+            qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
+            return QString();
+        }
 
-	if (char_code.isEmpty()) {
-	    qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
-	    return QString();
-	}
+        bool ok;
+        unsigned int c;
+        if (char_code.startsWith('x')) {
+            char_code = char_code.mid(1);
+            c = char_code.toUInt(&ok, 16);
+        } else {
+            c = char_code.toUInt(&ok, 10);
+        }
 
-	if (char_code.at(0) == 'x') {
-	    char_code = char_code.right(char_code.length() - 1);
-	    bool ok;
-	    unsigned c = char_code.toUInt(&ok, 16);
-	    if (!ok) {
-	        qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
-		return QString();
-	    }
-	    result += QChar(c);
-	}
-	else {
-	    bool ok;
-	    unsigned c = char_code.toUInt(&ok, 10);
-	    if (!ok) {
-	        qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
-		return QString();
-	    }
-	    result += QChar(c);
-	}
+        if (!ok || c > 0x10FFFF) {
+            qWarning("decodeEntityValue(): bad entity literal: \"%s\"", literal.toLatin1().data());
+            return QString();
+        }
+
+        if (c <= 0xFFFF) {
+            result += QChar(c);
+        } else {
+            c -= 0x10000;
+            result += QChar(0xD800 + (c >> 10));
+            result += QChar(0xDC00 + (c & 0x3FF));
+        }
     }
 
     return result;
@@ -5829,7 +5860,7 @@ static const EntitySpec *searchEntitySpecData(const QString &value, const Entity
     if (ent == 0)
 	ent = g_xml_entity_data;
     for (; ent->name != 0; ++ent) {
-	QString ent_value = decodeEntityValue(ent->value);
+	    QString ent_value = decodeEntityValue(ent->value);
 	if (value == ent_value)
 	    return ent;
     }

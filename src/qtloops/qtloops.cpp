@@ -29,7 +29,7 @@
 #include <QPen>
 #include <QPointF>
 #include <QTransform>
-#include <QVector>
+#include <QList>
 
 namespace
 {
@@ -141,17 +141,19 @@ QPainterPath scalePath(const QPainterPath& path, qreal scale)
       const QPainterPath::Element& el = path.elementAt(i);
       if(el.isMoveTo())
         {
-          out.moveTo(el*scale);
+          out.moveTo(el.x * scale, el.y * scale);
         }
       else if(el.isLineTo())
         {
-          out.lineTo(el*scale);
+          out.lineTo(el.x * scale, el.y * scale);
         }
       else if(el.isCurveTo())
         {
-          out.cubicTo(el*scale,
-                      path.elementAt(i+1)*scale,
-                      path.elementAt(i+2)*scale);
+          const QPainterPath::Element& el_1 = path.elementAt(i+1);
+          const QPainterPath::Element& el_2 = path.elementAt(i+2);
+          out.cubicTo(el.x * scale, el.y * scale,
+                      el_1.x * scale, el_1.y * scale,
+                      el_2.x * scale, el_2.y * scale);
           i += 2;
         }
     }
@@ -251,7 +253,7 @@ void plotLinesToPainter(QPainter& painter,
 
   if( maxsize != 0 )
     {
-      QVector<QLineF> lines;
+      QList<QLineF> lines;
       for(int i = 0; i < maxsize; ++i)
 	{
 	  QPointF pt1(x1(i), y1(i));
@@ -287,7 +289,7 @@ void plotBoxesToPainter(QPainter& painter,
 
   const int maxsize = min(x1.dim, x2.dim, y1.dim, y2.dim);
 
-  QVector<QRectF> rects;
+  QList<QRectF> rects;
   for(int i = 0; i < maxsize; ++i)
     {
       QPointF pt1(x1(i), y1(i));

@@ -22,7 +22,7 @@ from .. import setting
 class HistorySpinBox(qt.QSpinBox):
     """A SpinBox which remembers its setting between calls."""
 
-    def __init__(self, *args):
+    def __init__(self, *args, parent=None):
         qt.QSpinBox.__init__(self, *args)
         self.default = 0
 

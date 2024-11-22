@@ -117,10 +117,10 @@ class ImportDialog(VeuszDialog):
         self.filenameedit.editTextChanged.connect(self.slotUpdatePreview)
 
         self.importbutton = self.buttonBox.addButton(
-            _("&Import"), qt.QDialogButtonBox.ApplyRole)
+            _("&Import"), qt.QDialogButtonBox.ButtonRole.ApplyRole)
         self.importbutton.clicked.connect(self.slotImport)
 
-        self.buttonBox.button(qt.QDialogButtonBox.Reset).clicked.connect(
+        self.buttonBox.button(qt.QDialogButtonBox.StandardButton.Reset).clicked.connect(
             self.slotReset)
         self.encodingcombo.currentIndexChanged.connect(self.slotUpdatePreview)
 
@@ -153,7 +153,7 @@ class ImportDialog(VeuszDialog):
         """Browse for a data file."""
 
         fd = qt.QFileDialog(self, _('Browse data file'))
-        fd.setFileMode( qt.QFileDialog.ExistingFile )
+        fd.setFileMode( qt.QFileDialog.FileMode.ExistingFile )
 
         # collect filters from tabs
         filters = [_('All files (*)')]
@@ -179,7 +179,7 @@ class ImportDialog(VeuszDialog):
         fd.setDirectory(ImportDialog.dirname)
 
         # update filename if changed
-        if fd.exec_() == qt.QDialog.Accepted:
+        if fd.exec() == qt.QDialog.DialogCode.Accepted:
             ImportDialog.dirname = fd.directory().absolutePath()
             self.filenameedit.replaceAndAddHistory( fd.selectedFiles()[0] )
             setting.settingdb['import_filterbrowse'] = fd.selectedNameFilter()
@@ -238,9 +238,15 @@ class ImportDialog(VeuszDialog):
             filters = ['*.*']
         else:
             filters = ['*'+t for t in w.filetypes]
-        model = qt.QDirModel(
-            filters, qt.QDir.AllDirs | qt.QDir.Files, qt.QDir.Name)
-        self.filenamecompleter.setModel(model)
+        model = qt.QFileSystemModel()
+        model.setNameFilters(filters)
+        model.setFilter(qt.QDir.Filter.AllDirs | qt.QDir.Filter.Files)
+        proxy_model = qt.QSortFilterProxyModel()
+        proxy_model.setSourceModel(model)
+        proxy_model.setSortRole(0)
+        proxy_model.sort(0, qt.Qt.SortOrder.DescendingOrder)
+        # model = qt.QFileSystemModel(filters, qt.QDir.Filter.AllDirs | qt.QDir.Filter.Files, qt.QDir.SortFlag.Name)
+        self.filenamecompleter.setModel(proxy_model)
 
     def enableDisableImport(self, *args):
         """Disable or enable import button if allowed."""
@@ -280,7 +286,7 @@ class ImportDialog(VeuszDialog):
         except Exception:
             # show exception dialog
             d = exceptiondialog.ExceptionDialog(sys.exc_info(), self)
-            d.exec_()
+            d.exec()
 
     def retnDatasetInfo(self, dsnames, linked, filename):
         """Return a list of information for the dataset names given."""

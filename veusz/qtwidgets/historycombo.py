@@ -31,20 +31,20 @@ class HistoryCombo(qt.QComboBox):
     Duplicates and blanks are ignored.
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args, parent=None):
         qt.QComboBox.__init__(self, *args)
 
         # sane defaults
         self.setEditable(True)
         self.setMaxCount(50)
-        self.setInsertPolicy(qt.QComboBox.InsertAtTop)
+        self.setInsertPolicy(qt.QComboBox.InsertPolicy.InsertAtTop)
         self.setDuplicatesEnabled(False)
         self.setSizePolicy( qt.QSizePolicy(
-            qt.QSizePolicy.MinimumExpanding, qt.QSizePolicy.Fixed) )
+            qt.QSizePolicy.Policy.MinimumExpanding, qt.QSizePolicy.Policy.Fixed) )
 
         # stops combobox readjusting in size to fit contents
         self.setSizeAdjustPolicy(
-            qt.QComboBox.AdjustToMinimumContentsLengthWithIcon)
+            qt.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
 
         self.default = []
         self.hasshown = False

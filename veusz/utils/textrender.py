@@ -628,7 +628,7 @@ class PartText(Part):
     def render(self, state):
         """Render some text."""
 
-        width = state.fontMetrics().width(self.text)
+        width = state.fontMetrics().horizontalAdvance(self.text)
 
         # actually write the text if requested
         if state.actually_render:
@@ -977,7 +977,7 @@ class PartDot(Part):
         painter.save()
         circsize = state.getPixelsPerPt()
         painter.setBrush( qt.QBrush(painter.pen().color()) )
-        painter.setPen( qt.QPen(qt.Qt.NoPen) )
+        painter.setPen( qt.QPen(qt.Qt.PenStyle.NoPen) )
 
         x = 0.5*(initx + state.x)
         y = state.y-height + circsize
@@ -1002,7 +1002,7 @@ class PartDDot(Part):
         painter.save()
         circsize = state.getPixelsPerPt()
         painter.setBrush( qt.QBrush(painter.pen().color()) )
-        painter.setPen( qt.QPen(qt.Qt.NoPen) )
+        painter.setPen( qt.QPen(qt.Qt.PenStyle.NoPen) )
 
         x1 = initx + 0.25*(state.x-initx)
         x2 = initx + 0.75*(state.x-initx)
@@ -1032,7 +1032,7 @@ class PartTilde(Part):
         state.painter.setFont(font)
 
         # set x and y positions for tilde
-        tildew = state.fontMetrics().width('~')
+        tildew = state.fontMetrics().horizontalAdvance('~')
 
         if not font.italic() or (state.x-initx) >= 2*tildew:
             over_pos = state.x - (state.x - initx)*0.5 - tildew*0.5
@@ -1516,13 +1516,16 @@ class _MmlRenderer(_Renderer):
         # for other DPIs. We then repaint the output to the real
         # device, scaling to make the size correct.
 
-        screendev = qt.QApplication.desktop()
+        screendev = qt.QApplication.primaryScreen()
         self.record = recordpaint.RecordPaintDevice(
-            1024, 1024, screendev.logicalDpiX(), screendev.logicalDpiY())
+            1024, 1024, 
+            int(screendev.logicalDotsPerInchX()),
+            int(screendev.logicalDotsPerInchY())
+        )
 
         rpaint = qt.QPainter(self.record)
         # painting code relies on these attributes of the painter
-        rpaint.pixperpt = screendev.logicalDpiY() / 72.
+        rpaint.pixperpt = screendev.logicalDotsPerInchY() / 72.
         rpaint.scaling = 1.0
 
         # Upscale any drawing by this factor, then scale back when
@@ -1530,7 +1533,7 @@ class _MmlRenderer(_Renderer):
         # different zoom factors (I hate this code).
         upscale = 5.
 
-        doc.setFontName( qtmml.QtMmlWidget.NormalFont, self.font.family() )
+        doc.setFontName( qtmml.QtMmlWidget.MmlFont.NormalFont, self.font.family() )
 
         ptsize = self.font.pointSizeF()
         if ptsize < 0:
@@ -1540,7 +1543,7 @@ class _MmlRenderer(_Renderer):
 
         # the output will be painted finally scaled
         self.drawscale = (
-            self.painter.dpi / screendev.logicalDpiY()
+            self.painter.dpi / screendev.logicalDotsPerInchY()
             / upscale )
         self.size = doc.size() * self.drawscale
 
@@ -1571,7 +1574,7 @@ class _MmlRenderer(_Renderer):
             p.setPen(qt.QPen(qt.QColor("red")))
             p.drawText(
                 qt.QRectF(self.xi, self.yi, 200, 200),
-                qt.Qt.AlignLeft | qt.Qt.AlignTop | qt.Qt.TextWordWrap,
+                qt.Qt.AlignmentFlag.AlignLeft | qt.Qt.AlignmentFlag.AlignTop | qt.Qt.TextFlag.TextWordWrap,
                 self.error )
         p.restore()
 

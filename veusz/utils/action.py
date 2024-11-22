@@ -67,6 +67,18 @@ def makeAction(parent, descr, menutext, slot, icon=None, key=None,
         a.setCheckable(True)
     return a
 
+def makeMenu(parent, descr, title, actions=[], icon=None):
+    """A quick way to set up an QMenu object."""
+    menu = qt.QMenu(title, parent)
+    if descr:
+        menu.setStatusTip(descr)
+        menu.setToolTip(textwrap.fill(descr, 25))
+    if icon:
+        menu.setIcon(getIcon(icon))
+    if actions:
+        menu.addActions(actions)
+    return menu
+
 def addToolbarActions(toolbar, actions, which):
     """Add actions listed in "which" from dict "actions" to toolbar "toolbar".
     """

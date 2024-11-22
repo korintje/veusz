@@ -279,7 +279,7 @@ the flashing Line tab (%s).</p>
             disablenext=True,
             nextstep=FunctionLineFormatting)
 
-        tb.currentChanged[int].connect(self.slotCurrentChanged)
+        tb.currentChanged.connect(self.slotCurrentChanged)
 
     def slotCurrentChanged(self, idx):
         if idx == 1:
@@ -762,7 +762,7 @@ class TutorialDock(qt.QDockWidget):
 
     def __init__(self, document, mainwin, *args):
         qt.QDockWidget.__init__(self, *args)
-        self.setAttribute(qt.Qt.WA_DeleteOnClose)
+        self.setAttribute(qt.Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setMinimumHeight(300)
         self.setWindowTitle('Tutorial - Veusz')
         self.setObjectName('veusztutorialwindow')
@@ -787,7 +787,7 @@ class TutorialDock(qt.QDockWidget):
 
         self.buttonbox = qt.QDialogButtonBox()
         self.nextb = self.buttonbox.addButton(
-            'Next', qt.QDialogButtonBox.ActionRole)
+            'Next', qt.QDialogButtonBox.ButtonRole.ActionRole)
         self.nextb.clicked.connect(self.slotNext)
 
         l.addWidget(self.buttonbox)
@@ -839,7 +839,7 @@ class TutorialDock(qt.QDockWidget):
         # add a close button if requested
         if self.step.closestep:
             closeb = self.buttonbox.addButton(
-                'Close', qt.QDialogButtonBox.ActionRole)
+                'Close', qt.QDialogButtonBox.ButtonRole.ActionRole)
             closeb.clicked.connect(self.close)
 
     # work around C/C++ object deleted
