@@ -23,12 +23,12 @@ jobs:
       run : |
         python -V
         python -m pip install --upgrade pip
-    - name: Install Qt
+    - name: Install Qt6
       uses: jurplel/install-qt-action@v4
       with:
         cache: 'true'
         cache-key-prefix: 'qt-windows-v1'
-        version: '5.15.2'
+        version: '6.7.1'
         setup-python: false
     - name: Install Python dependencies
       run: |
