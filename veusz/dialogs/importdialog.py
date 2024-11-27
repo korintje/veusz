@@ -120,8 +120,9 @@ class ImportDialog(VeuszDialog):
             _("&Import"), qt.QDialogButtonBox.ButtonRole.ApplyRole)
         self.importbutton.clicked.connect(self.slotImport)
 
-        self.buttonBox.button(qt.QDialogButtonBox.StandardButton.Reset).clicked.connect(
-            self.slotReset)
+        self.buttonBox.button(
+            qt.QDialogButtonBox.StandardButton.Reset).clicked.connect(
+                self.slotReset)
         self.encodingcombo.currentIndexChanged.connect(self.slotUpdatePreview)
 
         # add completion for filename
@@ -245,7 +246,6 @@ class ImportDialog(VeuszDialog):
         proxy_model.setSourceModel(model)
         proxy_model.setSortRole(0)
         proxy_model.sort(0, qt.Qt.SortOrder.DescendingOrder)
-        # model = qt.QFileSystemModel(filters, qt.QDir.Filter.AllDirs | qt.QDir.Filter.Files, qt.QDir.SortFlag.Name)
         self.filenamecompleter.setModel(proxy_model)
 
     def enableDisableImport(self, *args):

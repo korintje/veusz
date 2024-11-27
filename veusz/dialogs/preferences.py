@@ -66,7 +66,10 @@ class PreferencesDialog(VeuszDialog):
             self.translationBrowseClicked)
 
         # use cwd for file dialogs
-        (self.dirDocCWDRadio if setdb['dirname_usecwd'] else self.dirDocPrevRadio).click()
+        (
+            self.dirDocCWDRadio if setdb['dirname_usecwd']
+            else self.dirDocPrevRadio
+        ).click()
 
         # add import paths
         self.docFileAddImportPaths.setChecked( setdb['docfile_addimportpaths'] )

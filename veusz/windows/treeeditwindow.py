@@ -1060,8 +1060,8 @@ class TreeEditDock(qt.QDockWidget):
         )
 
         # separate menus for adding shapes and axis types
-        self.shapemenu = qt.QMenu()
-        self.shapemenu.addActions( [actions[act] for act in (
+        shapemenu = qt.QMenu(self)
+        shapemenu.addActions( [actions[act] for act in (
             'add.rect',
             'add.ellipse',
             'add.line',
@@ -1069,15 +1069,15 @@ class TreeEditDock(qt.QDockWidget):
             'add.svgfile',
             'add.polygon',
         )])
-        actions['add.shapemenu'].setMenu(self.shapemenu)
+        actions['add.shapemenu'].setMenu(shapemenu)
 
-        self.axismenu = qt.QMenu()
-        self.axismenu.addActions( [actions[act] for act in (
+        axismenu = qt.QMenu(self)
+        axismenu.addActions( [actions[act] for act in (
             'add.axis',
             'add.axis-broken',
             'add.axis-function',
         )])
-        actions['add.axismenu'].setMenu(self.axismenu)
+        actions['add.axismenu'].setMenu(axismenu)
         actions['add.axismenu'].triggered.connect(actions['add.axis'].trigger)
 
         menuitems = (
@@ -1389,7 +1389,8 @@ class TreeEditDock(qt.QDockWidget):
                  (wname is None or w.name == wname) ):
                 idx = self.treemodel.getWidgetIndex(w)
                 self.treeview.selectionModel().select(
-                    idx, qt.QItemSelectionModel.SelectionFlag.Select |
+                    idx,
+                    qt.QItemSelectionModel.SelectionFlag.Select |
                     qt.QItemSelectionModel.SelectionFlag.Rows)
 
         self.document.walkNodes(selectwidget, nodetypes=('widget',), root=root)
@@ -1404,7 +1405,8 @@ class TreeEditDock(qt.QDockWidget):
             if c is not w and c.typename == wtype:
                 idx = self.treemodel.getWidgetIndex(c)
                 self.treeview.selectionModel().select(
-                    idx, qt.QItemSelectionModel.SelectionFlag.Select |
+                    idx,
+                    qt.QItemSelectionModel.SelectionFlag.Select |
                     qt.QItemSelectionModel.SelectionFlag.Rows)
 
     def updateSelectMenu(self):

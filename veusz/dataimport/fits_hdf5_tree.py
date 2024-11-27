@@ -440,7 +440,6 @@ class FileDataNode(FileNode):
         return False
 
     def flags(self, column, defflags):
-
         if ( column == _ColToImport and self.datatypevalid and
              not self.grpImport() and self.dimsOkForImport() ):
             # allow import column to be clicked

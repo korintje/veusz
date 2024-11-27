@@ -149,22 +149,27 @@ class MainWindow(qt.QMainWindow):
 
         # likewise with the tree-editing window
         self.treeedit = treeeditwindow.TreeEditDock(self.document, self)
-        self.addDockWidget(qt.Qt.DockWidgetArea.LeftDockWidgetArea, self.treeedit)
+        self.addDockWidget(
+            qt.Qt.DockWidgetArea.LeftDockWidgetArea, self.treeedit)
         self.propdock = treeeditwindow.PropertiesDock(
             self.document, self.treeedit, self)
-        self.addDockWidget(qt.Qt.DockWidgetArea.LeftDockWidgetArea, self.propdock)
+        self.addDockWidget(
+            qt.Qt.DockWidgetArea.LeftDockWidgetArea, self.propdock)
         self.formatdock = treeeditwindow.FormatDock(
             self.document, self.treeedit, self)
-        self.addDockWidget(qt.Qt.DockWidgetArea.LeftDockWidgetArea, self.formatdock)
+        self.addDockWidget(
+            qt.Qt.DockWidgetArea.LeftDockWidgetArea, self.formatdock)
         self.datadock = DataNavigatorWindow(self.document, self, self)
-        self.addDockWidget(qt.Qt.DockWidgetArea.RightDockWidgetArea, self.datadock)
+        self.addDockWidget(
+            qt.Qt.DockWidgetArea.RightDockWidgetArea, self.datadock)
 
         # make the console window a dock
         self.console = consolewindow.ConsoleWindow(
             self.document, self)
         self.console.hide()
         self.interpreter = self.console.interpreter
-        self.addDockWidget(qt.Qt.DockWidgetArea.BottomDockWidgetArea, self.console)
+        self.addDockWidget(
+            qt.Qt.DockWidgetArea.BottomDockWidgetArea, self.console)
 
         # assemble the statusbar
         statusbar = self.statusbar = qt.QStatusBar(self)
@@ -874,7 +879,8 @@ class MainWindow(qt.QMainWindow):
             _("Veusz includes a tutorial to help get you started.\n"
               "Would you like to start the tutorial now?\n"
               "If not, you can access it later through the Help menu."),
-            qt.QMessageBox.StandardButton.Yes | qt.QMessageBox.StandardButton.No
+            qt.QMessageBox.StandardButton.Yes |
+            qt.QMessageBox.StandardButton.No
         )
 
         if retn == qt.QMessageBox.StandardButton.Yes:
@@ -886,7 +892,8 @@ class MainWindow(qt.QMainWindow):
             # run the tutorial
             from .tutorial import TutorialDock
             tutdock = TutorialDock(self.document, self, self)
-            self.addDockWidget(qt.Qt.DockWidgetArea.RightDockWidgetArea, tutdock)
+            self.addDockWidget(
+                qt.Qt.DockWidgetArea.RightDockWidgetArea, tutdock)
             tutdock.show()
         else:
             # open up a blank window for tutorial
@@ -920,7 +927,8 @@ class MainWindow(qt.QMainWindow):
             _("Veusz will periodically check for new Veusz versions and\n"
               "let you know if there is a new one available.\n\n"
               "Is this ok? This choice can be changed in Preferences."),
-            qt.QMessageBox.StandardButton.Yes | qt.QMessageBox.StandardButton.No,
+            qt.QMessageBox.StandardButton.Yes |
+            qt.QMessageBox.StandardButton.No,
             qt.QMessageBox.StandardButton.Yes
         )
 
@@ -962,7 +970,8 @@ class MainWindow(qt.QMainWindow):
               "of software dependencies, the computer language and how "
               "often features are used.\n\n"
               "Is this ok? This choice can be changed in Preferences."),
-            qt.QMessageBox.StandardButton.Yes | qt.QMessageBox.StandardButton.No,
+            qt.QMessageBox.StandardButton.Yes |
+            qt.QMessageBox.StandardButton.No,
             qt.QMessageBox.StandardButton.Yes
         )
 
@@ -990,7 +999,7 @@ class MainWindow(qt.QMainWindow):
     def queryOverwrite(self):
         """Do you want to overwrite the current document.
 
-        Returns QMessageBox.(Yes,No,Cancel)."""
+        Returns qt.QMessageBox.(Yes,No,Cancel)."""
 
         # include filename in mesage box if we can
         filetext = ''
@@ -1219,13 +1228,13 @@ class MainWindow(qt.QMainWindow):
                     _("Could not import data from file '%s':\n\n %s") % (
                         filename, error))
                 msgbox.setInformativeText(_("Do you want to look for another file?"))
-                msgbox.setStandardButtons(qt.QMessageBox.StandardButton.Yes | qt.QMessageBox.StandardButton.Cancel)
+                msgbox.setStandardButtons(
+                    qt.QMessageBox.StandardButton.Yes |
+                    qt.QMessageBox.StandardButton.Cancel )
                 filename = None
                 if msgbox.exec() == qt.QMessageBox.StandardButton.Yes:
                     filename = qt.QFileDialog.getOpenFileName(self, "Choose data file")
                     filename = filename[0] if filename else None
-                elif res == qt.QMessageBox.Ignore:
-                    filename = False
             return filename
 
         # save stdout and stderr, then redirect to console
@@ -1519,7 +1528,8 @@ class MainWindow(qt.QMainWindow):
                     _("Are you really sure that you want to add directory '%s' to the "
                       "list of trusted locations. Any file loaded from this directory "
                       "will be trusted.") % filedir,
-                    qt.QMessageBox.StandardButton.Yes | qt.QMessageBox.StandardButton.No,
+                    qt.QMessageBox.StandardButton.Yes |
+                    qt.QMessageBox.StandardButton.No,
                     qt.QMessageBox.StandardButton.No,
                 )
             if button == qt.QMessageBox.StandardButton.Yes:
@@ -1547,7 +1557,8 @@ class MainWindow(qt.QMainWindow):
             _("Are you sure that you want to trust the document contents, "
               "including any potentially dangerous code? Only trust "
               "documents with a trusted source."),
-            qt.QMessageBox.StandardButton.Yes | qt.QMessageBox.StandardButton.No,
+            qt.QMessageBox.StandardButton.Yes |
+            qt.QMessageBox.StandardButton.No,
             qt.QMessageBox.StandardButton.No,
         )
         if button == qt.QMessageBox.StandardButton.Yes:

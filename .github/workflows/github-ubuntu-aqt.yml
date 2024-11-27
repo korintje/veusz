@@ -1,4 +1,4 @@
-name: Ubuntu build using pip packages
+name: Ubuntu build using aqtinstall
 
 on:
   push:

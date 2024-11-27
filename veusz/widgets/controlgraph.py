@@ -28,7 +28,6 @@ import os.path
 from types import SimpleNamespace
 
 from .. import qtall as qt
-
 from .. import document
 from .. import setting
 from .. import utils
@@ -993,7 +992,6 @@ class _SceneRotationItem(qt.QGraphicsItem):
         delta = newpos-oldpos
 
         if mode == 'xy':
-            # if (int(event.modifiers()) & qt.Qt.ControlModifier) == 0:
             if (event.modifiers() & qt.Qt.KeyboardModifier.ControlModifier) == qt.Qt.KeyboardModifier.NoModifier:
                 # rotate in x,y axes on screen
                 deltaM = threed.rotate3M4(

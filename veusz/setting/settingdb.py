@@ -153,7 +153,8 @@ class _SettingDB:
         if val[0]:
             default = self.color_defaults[name]
             if default == 'LightBase':
-                base = qt.QCoreApplication.instance().palette().color(qt.QPalette.ColorRole.Base)
+                base = qt.QCoreApplication.instance().palette().color(
+                    qt.QPalette.ColorRole.Base)
                 if base.value() < 127:
                     base = qt.QColor(qt.Qt.GlobalColor.white)
                 return base

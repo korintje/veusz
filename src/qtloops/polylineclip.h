@@ -100,7 +100,7 @@ private:
   QRectF _cliprect;
   bool _rotatelabels;
 
-  QList<QList<QPolygonF>> _polys;
+  QList< QList<QPolygonF> > _polys;
   QList<QSizeF> _textsizes;
 };
 

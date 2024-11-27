@@ -264,7 +264,7 @@ class FunctionFormatLine(TutorialStep):
 
         tb = mainwin.formatdock.tabwidget.tabBar()
         label = qt.QLabel("  ", tb)
-        tb.setTabButton(1, qt.QTabBar.LeftSide, label)
+        tb.setTabButton(1, qt.QTabBar.ButtonPosition.LeftSide, label)
 
         TutorialStep.__init__(
             self, _('''

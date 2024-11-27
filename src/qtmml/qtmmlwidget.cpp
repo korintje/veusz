@@ -4227,8 +4227,6 @@ MmlTextNode::MmlTextNode(const QString &text, MmlDocument *document)
 {
     m_text = text;
     // Trim whitespace from ends, but keep nbsp and thinsp
-    // m_text.remove(QRegExp("^[^\\S\\x00a0\\x2009]+"));
-    // m_text.remove(QRegExp("[^\\S\\x00a0\\x2009]+$"));
     static const QRegularExpression leadingWhitespace("^[^\\S\\x00a0\\x2009]+");
     static const QRegularExpression trailingWhitespace("[^\\S\\x00a0\\x2009]+$");
     m_text.remove(leadingWhitespace);
@@ -5860,7 +5858,7 @@ static const EntitySpec *searchEntitySpecData(const QString &value, const Entity
     if (ent == 0)
 	ent = g_xml_entity_data;
     for (; ent->name != 0; ++ent) {
-	    QString ent_value = decodeEntityValue(ent->value);
+	QString ent_value = decodeEntityValue(ent->value);
 	if (value == ent_value)
 	    return ent;
     }

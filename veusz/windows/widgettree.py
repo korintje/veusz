@@ -380,7 +380,7 @@ class WidgetTreeModel(qt.QAbstractItemModel):
     def dropMimeData(self, mimedata, action, row, column, parentindex):
         """User drags and drops widget."""
 
-        if action == qt.Qt.IgnoreAction:
+        if action == qt.Qt.DropAction.IgnoreAction:
             return True
 
         data = document.getWidgetMime(mimedata)

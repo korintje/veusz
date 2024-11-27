@@ -43,9 +43,12 @@ class VeuszDialog(qt.QDialog):
         flag = qt.Qt.WindowType.Dialog
         if not modal:
             flag |= (
-                qt.Qt.WindowType.CustomizeWindowHint | qt.Qt.WindowType.WindowMinimizeButtonHint |
-                qt.Qt.WindowType.WindowMaximizeButtonHint | qt.Qt.WindowType.WindowCloseButtonHint |
-                qt.Qt.WindowType.WindowTitleHint | qt.Qt.WindowType.WindowSystemMenuHint
+                qt.Qt.WindowType.CustomizeWindowHint |
+                qt.Qt.WindowType.WindowMinimizeButtonHint |
+                qt.Qt.WindowType.WindowMaximizeButtonHint |
+                qt.Qt.WindowType.WindowCloseButtonHint |
+                qt.Qt.WindowType.WindowTitleHint |
+                qt.Qt.WindowType.WindowSystemMenuHint
             )
 
         qt.QDialog.__init__(self, mainwindow, flag)

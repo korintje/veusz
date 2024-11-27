@@ -40,12 +40,12 @@ from PyQt6.QtWidgets import (
     QWidget, QMainWindow, QApplication, QSplashScreen, QLabel, QVBoxLayout,
     QHBoxLayout, QGridLayout, QMessageBox, QGraphicsRectItem, QGraphicsLineItem,
     QGraphicsSimpleTextItem, QGraphicsItem, QSizePolicy, QCompleter, QButtonGroup,
-    QDialogButtonBox, QFileDialog, QStatusBar, QAbstractItemView, QDialog,
+    QDialogButtonBox, QFileDialog, QStatusBar, QAbstractItemView, QDialog, QTabBar,
     QTreeWidgetItem, QStyle, QStyledItemDelegate, QLineEdit, QMenu, QFrame, QSlider,
     QGraphicsPathItem, QGraphicsView, QGraphicsScene, QPushButton, QToolButton,
     QHeaderView, QToolBar, QScrollArea, QTextEdit, QSpinBox, QCheckBox, QComboBox,
     QFontComboBox, QGroupBox, QDockWidget, QTreeView, QTabWidget, QTableWidgetItem,
-    QColorDialog, QListWidgetItem, QInputDialog, QRadioButton, QItemDelegate
+    QColorDialog, QListWidgetItem, QInputDialog, QRadioButton, QItemDelegate,
 )
 from PyQt6.QtSvgWidgets import QGraphicsSvgItem
 from PyQt6.QtSvg import QSvgRenderer

@@ -219,7 +219,7 @@ class ExceptionDialog(VeuszDialog):
     def accept(self):
         """Accept by opening send dialog."""
         d = ExceptionSendDialog(self.backtrace, self)
-        if d.exec() == qt.QDialog.Accepted:
+        if d.exec() == qt.QDialog.DialogCode.Accepted:
             VeuszDialog.accept(self)
 
     def ignoreSessionSlot(self):

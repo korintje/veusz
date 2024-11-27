@@ -56,9 +56,6 @@ class CaptureDialog(VeuszDialog):
         model = qt.QFileSystemModel()
         self.filenamecompleter.setModel(model)
         self.filenameEdit.setCompleter(self.filenamecompleter)
-        # model = qt.QFileSystemModel(c)
-        # c.setModel(model)
-        # self.filenameEdit.setCompleter(c)
 
         # get notification of change of capture method
         self.methodBG = qt.QButtonGroup(self)
@@ -86,7 +83,9 @@ class CaptureDialog(VeuszDialog):
 
         # user starts capture
         self.captureButton = self.buttonBox.addButton(
-            _("Ca&pture"), qt.QDialogButtonBox.ButtonRole.ApplyRole )
+            _("Ca&pture"),
+            qt.QDialogButtonBox.ButtonRole.ApplyRole
+        )
 
         self.captureButton.clicked.connect(self.slotCaptureClicked)
 

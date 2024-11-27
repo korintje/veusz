@@ -370,11 +370,8 @@ def run():
 
     # high DPI support
     try:
-        # qt.QApplication.setAttribute(qt.Qt.AA_EnableHighDpiScaling, True)
-        # qt.QApplication.setAttribute(qt.Qt.AA_UseHighDpiPixmaps, True)
         qt.QApplication.setHighDpiScaleFactorRoundingPolicy(
-            qt.QApplication.highDpiScaleFactorRoundingPolicy().PassThrough
-        )
+            qt.QApplication.highDpiScaleFactorRoundingPolicy().PassThrough)
     except AttributeError:
         # old qt versions
         pass

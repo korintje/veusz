@@ -137,12 +137,8 @@ class ExportDialog(VeuszDialog):
         self.fmtradios[ext].click()
 
         # regexp for comma separated ranges
-        # valre = qt.QRegExp(
-        #     r'^[0-9]+(\s*-\s*[0-9]+)?(\s*,\s*[0-9]+(\s*-\s*[0-9]+)?)*$')
-        # valid = qt.QRegExpValidator(valre, self)
         valre = qt.QRegularExpression(
-            r'^[0-9]+(\s*-\s*[0-9]+)?(\s*,\s*[0-9]+(\s*-\s*[0-9]+)?)*$'
-        )
+            r'^[0-9]+(\s*-\s*[0-9]+)?(\s*,\s*[0-9]+(\s*-\s*[0-9]+)?)*$')
         valid = qt.QRegularExpressionValidator(valre, self)
         self.editPagePages.setValidator(valid)
 

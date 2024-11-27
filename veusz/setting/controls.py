@@ -1802,9 +1802,6 @@ class Filename(qt.QWidget):
         model = qt.QFileSystemModel()
         self.filenamecompleter.setModel(model)
         self.edit.setCompleter(self.filenamecompleter)
-        # model = qt.QFileSystemModel(c)
-        # c.setModel(model)
-        # self.edit.setCompleter(c)
 
         # for read only filenames
         if setting.readonly:
