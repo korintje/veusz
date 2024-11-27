@@ -7,15 +7,15 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-18.04'
+  vmImage: 'ubuntu-24.04'
 strategy:
   matrix:
     Python35:
-      python.version: '3.5'
+      python.version: '3.10'
     Python36:
-      python.version: '3.6'
+      python.version: '3.11'
     Python37:
-      python.version: '3.7'
+      python.version: '3.12'
 
 steps:
 - task: UsePythonVersion@0
@@ -24,9 +24,9 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    sudo apt-get -y install qt5-default qt5-qmake
+    sudo apt install -y build-essential qmake6 libxcb1-dev libx11-dev libxext-dev qt6-base-dev qt6-declarative-dev qt6-webengine-dev
     python -m pip install --upgrade pip
-    pip install PyQt5 sip numpy h5py astropy
+    pip install PyQt6 sip numpy h5py astropy tomli
     # pip install -r requirements.txt
   displayName: 'Install dependencies'
 

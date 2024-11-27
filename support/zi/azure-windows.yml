@@ -3,9 +3,9 @@
 variables:
   name: 'Windows_x64'
   architecture: 'x64'
-  qt_version: '5.12.6'
-  qt_spec: 'msvc2017_64'
-  qt_aqt_spec: 'win64_msvc2017_64'
+  qt_version: '6.8.0'
+  qt_spec: 'msvc2022_64'
+  qt_aqt_spec: 'win64_msvc2022_64'
   vc_redist_url: 'https://go.microsoft.com/fwlink/?LinkId=746572'
   vc_redist_file_name: 'vc_redist.x64.exe'
   vc_vars: 'vcvars64.bat'
@@ -14,12 +14,12 @@ trigger:
 - master
 
 pool:
-  vmImage: 'vs2017-win2016'
+  vmImage: 'vs2022-win2019'
 
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '3.7'
+    versionSpec: '3.12'
     addToPath: true
     architecture: 'x64'
 
@@ -32,13 +32,13 @@ steps:
   displayName: 'Install Qt'
 
 - script: |
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\${{ variables.vc_vars }}"
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\${{ variables.vc_vars }}"
     set PATH=C:\Qt\${{ variables.qt_version }}\${{ variables.qt_spec }}\bin;%PATH%
-    pip install PyQt5 sip numpy h5py astropy
+    pip install PyQt6 sip numpy h5py astropy tomli
   displayName: 'Install Python dependencies'
 
 - script: |
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\${{ variables.vc_vars }}"
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\${{ variables.vc_vars }}"
     set PATH=C:\Qt\${{ variables.qt_version }}\${{ variables.qt_spec }}\bin;%PATH%
     python setup.py build_ext --inplace
   displayName: 'Build'

@@ -250,7 +250,7 @@ class sip_build_ext(build_ext):
 
         toml_text=f'''
 [build-system]
-requires=["sip >= 5.5.0, <7"]
+requires=["sip >= 6.8, <7"]
 build-backend="sipbuild.api"
 
 [tool.sip.metadata]
