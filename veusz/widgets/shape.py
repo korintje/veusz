@@ -93,7 +93,7 @@ class BoxShape(Shape):
     def drawShape(self, painter, rect):
         pass
 
-    def draw(self, posn, phelper, outerbounds = None):
+    def draw(self, posn, phelper, outerbounds=None):
         """Plot the key on a plotter."""
 
         s = self.settings
@@ -128,6 +128,11 @@ class BoxShape(Shape):
             clip = qt.QRectF(
                 qt.QPointF(posn[0], posn[1]), qt.QPointF(posn[2], posn[3]))
         painter = phelper.painter(self, posn, clip=clip)
+
+        controlgraphitems = []
+        dx, dy = posn[2] - posn[0], posn[3] - posn[1]
+        index = 0
+
         with painter:
             # drawing settings for shape
             if not s.Border.hide:
@@ -135,10 +140,6 @@ class BoxShape(Shape):
             else:
                 painter.setPen( qt.QPen(qt.Qt.PenStyle.NoPen) )
 
-            # iterate over positions
-            index = 0
-            dx, dy = posn[2]-posn[0], posn[3]-posn[1]
-            x = y = w = h = r = None
             for x, y, w, h, r in zip(
                     xpos, ypos,
                     itertools.cycle(width),
@@ -152,14 +153,13 @@ class BoxShape(Shape):
                 self.drawShape(painter, qt.QRectF(-wp*0.5, -hp*0.5, wp, hp))
                 painter.restore()
 
-        controlgraphitems = []
-        if x is not None and isnotdataset:
-            cgi = controlgraph.ControlResizableBox(
-                self, phelper, [x, y], [wp, hp], r, allowrotate=True)
-            cgi.index = index
-            cgi.widgetposn = posn
-            index += 1
-            controlgraphitems.append(cgi)
+                if isnotdataset:
+                    cgi = controlgraph.ControlResizableBox(
+                        self, phelper, [x, y], [wp, hp], r, allowrotate=True)
+                    cgi.index = index
+                    cgi.widgetposn = posn
+                    controlgraphitems.append(cgi)
+                index += 1
 
         phelper.setControlGraph(self, controlgraphitems)
 
@@ -183,8 +183,9 @@ class BoxShape(Shape):
         h = list(s.get('height').getFloatArray(self.document))
         r = list(s.get('rotate').getFloatArray(self.document))
 
-        xp[min(cgi.index, len(xp)-1)] = xpos
-        yp[min(cgi.index, len(yp)-1)] = ypos
+        idx = min(cgi.index, len(xp) - 1)
+        xp[idx] = xpos
+        yp[idx] = ypos
         w[min(cgi.index, len(w)-1)] = xw
         h[min(cgi.index, len(h)-1)] = yw
         r[min(cgi.index, len(r)-1)] = cgi.angle
