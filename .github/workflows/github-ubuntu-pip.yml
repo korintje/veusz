@@ -37,9 +37,13 @@ jobs:
       run: |
         python setup.py build_ext --inplace
     - name: Run tests
-      env:
-        LD_LIBRARY_PATH: ${{ env.QT_ROOT_DIR }}/lib:{{ env.LD_LIBRARY_PATH }}
-        QT_QPA_PLATFORM: minimal
-        VEUSZ_INPLACE_TEST: 1
       run: |
-        tests/runselftest.py
+        set -euo pipefail
+        unset QT_ROOT_DIR QML2_IMPORT_PATH
+        QT_LIBDIR="$(python -c 'from PyQt6.QtCore import QLibraryInfo as Q; print(Q.path(Q.LibraryPath.LibrariesPath))')"
+        QT_PLUGINSDIR="$(python -c 'from PyQt6.QtCore import QLibraryInfo as Q; print(Q.path(Q.LibraryPath.PluginsPath))')"
+        export LD_LIBRARY_PATH="${QT_LIBDIR}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export QT_PLUGIN_PATH="${QT_PLUGINSDIR}"
+        export QT_QPA_PLATFORM=minimal
+        export VEUSZ_INPLACE_TEST=1
+        python tests/runselftest.py
