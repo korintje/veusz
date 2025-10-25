@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up Python 3.13
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
-        python-version: '3.13.3'
+        python-version: '3.13'
     - name: Upgrade pip
       run : |
         python -V
@@ -27,8 +27,8 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         cache: 'true'
-        cache-key-prefix: 'qt-ubuntu-v3'
-        version: '6.9.1'
+        cache-key-prefix: 'qt-ubuntu-v4'
+        version: '6.9.3'
         setup-python: false
     - name: Install Python dependencies
       run: |
@@ -39,7 +39,7 @@ jobs:
     - name: Run tests
       env:
         LD_LIBRARY_PATH: ${{ env.QT_ROOT_DIR }}/lib:{{ env.LD_LIBRARY_PATH }}
-        QT_QPA_PLATFORM: minimal
+        QT_QPA_PLATFORM: offscreen
         VEUSZ_INPLACE_TEST: 1
       run: |
         tests/runselftest.py
