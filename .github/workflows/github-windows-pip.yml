@@ -27,11 +27,13 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         cache: 'true'
-        cache-key-prefix: 'qt-windows-v3'
-        version: '6.11.0'
+        cache-key-prefix: 'qt-windows-v2'
+        version: '6.10.2'
         setup-python: false
+# note that a test fails with PyQt 6.11
     - name: Install Python dependencies
       run: |
+        pip install PyQt6==6.10.2
         pip install -r requirements.txt
     - name: Build
       run: |
