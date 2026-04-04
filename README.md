@@ -1,4 +1,4 @@
-# [Veusz 4.2](https://veusz.github.io/)
+# [Veusz 4.2.1](https://veusz.github.io/)
 
 Veusz is a scientific plotting package.  It is designed to produce
 publication-ready PDF or SVG output. Graphs are built-up by combining
@@ -16,6 +16,7 @@ Changes in 4.2.1:
   * Move data settings to top in fit widget
   * Fix silent uninstallation
   * Fix wrong size output PDF on MacOS
+  * Update to qt-6.10.2 in binary builds
 
 Changes in 4.2:
   * Fix for double scaled 3D point marker borders (Takuro Hosomi)
